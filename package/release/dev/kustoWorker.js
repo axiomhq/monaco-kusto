@@ -1,3 +1,99 @@
+define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.GetTimeFilterInfoInternal = void 0;
+    var Utilities = /** @class */ (function () {
+        function Utilities() {
+        }
+        Utilities.toArray = function (e) {
+            return Bridge.toArray(e);
+        };
+        return Utilities;
+    }());
+    var TokensUtilities = /** @class */ (function () {
+        function TokensUtilities() {
+        }
+        TokensUtilities.getFunctionsSymbols = function (e) {
+            return TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameReference, function (e) {
+                return (e.ReferencedSymbol instanceof
+                    Kusto.Language.Symbols.FunctionSymbol);
+            });
+        };
+        TokensUtilities.getFirstSyntaxNode = function (e, t, n) {
+            return e.GetFirstDescendant(t, n);
+        };
+        TokensUtilities.getSyntaxNodes = function (e, t, n) {
+            return Utilities.toArray(e.GetDescendants(t, n));
+        };
+        return TokensUtilities;
+    }());
+    var SymbolsUtilities = /** @class */ (function () {
+        function SymbolsUtilities() {
+        }
+        SymbolsUtilities.isDateTime = function (t) {
+            return SymbolsUtilities.isColumn(t)
+                ? SymbolsUtilities.isDatetimeType(t.Type)
+                : t instanceof Kusto.Language.Symbols.TypeSymbol &&
+                    SymbolsUtilities.isDatetimeType(t);
+        };
+        SymbolsUtilities.isColumn = function (e) {
+            return e instanceof Kusto.Language.Symbols.ColumnSymbol;
+        };
+        SymbolsUtilities.isDatetimeType = function (e) {
+            return (e == Kusto.Language.Symbols.ScalarTypes.DateTime ||
+                e == Kusto.Language.Symbols.ScalarTypes.TimeSpan);
+        };
+        return SymbolsUtilities;
+    }());
+    function GetTimeFilterInfoInternal(e, t) {
+        var n = {
+            totalCharactersChecked: e.toString().length,
+            isContainTimeFilter: !0,
+            isTimeFilterInFunction: !1,
+            parsingDurationInMS: 0,
+            getTimeFilterInfoDurationInMS: 0,
+        };
+        if (t >= 0) {
+            if (TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.BinaryExpression, function (e) {
+                if (!e.GetFirstAncestor(Kusto.Language.Syntax.FilterOperator))
+                    return !1;
+                var t = SymbolsUtilities.isColumn(e.Left.ReferencedSymbol), n = SymbolsUtilities.isColumn(e.Right.ReferencedSymbol), a = SymbolsUtilities.isDateTime(e.Left.ResultType), s = SymbolsUtilities.isDateTime(e.Right.ResultType);
+                return (t && s) || (n && a) || a || s;
+            }))
+                return n;
+            if (TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.BetweenExpression, function (e) {
+                return (SymbolsUtilities.isDateTime(e.Left.ReferencedSymbol) ||
+                    SymbolsUtilities.isDateTime(e.Right.ReferencedSymbol));
+            }))
+                return n;
+            if (TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.MakeSeriesOnClause, function (e) {
+                return SymbolsUtilities.isDateTime(e.Expression.ReferencedSymbol);
+            }))
+                return n;
+            for (var a = 0, r = TokensUtilities.getFunctionsSymbols(e); a < r.length; a++) {
+                var o = r[a];
+                if (o.ReferencedSymbol instanceof
+                    Kusto.Language.Symbols.FunctionSymbol) {
+                    if (o.ReferencedSymbol == Kusto.Language.Functions.Around &&
+                        null !=
+                            o.GetFirstAncestor(Kusto.Language.Syntax.FilterOperator))
+                        return n;
+                    var u = o.GetExpansion();
+                    if (null == u && !(u = o.Parent.GetExpansion()))
+                        continue;
+                    var l = GetTimeFilterInfoInternal(u, --t);
+                    if (((n.totalCharactersChecked =
+                        n.totalCharactersChecked + l.totalCharactersChecked),
+                        l.isContainTimeFilter))
+                        return (n.isTimeFilterInFunction = !0), n;
+                }
+            }
+        }
+        return (n.isContainTimeFilter = !1), n;
+    }
+    exports.GetTimeFilterInfoInternal = GetTimeFilterInfoInternal;
+});
+
 // Definition of schema object in the context of language services. This model is exposed to consumers of this library.
 define('vs/language/kusto/languageService/schema',["require", "exports"], function (require, exports) {
     "use strict";
@@ -6274,7 +6370,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-define('vs/language/kusto/languageService/kustoLanguageService',["require", "exports", "./schema", "vscode-languageserver-types", "xregexp", "./schema"], function (require, exports, s, ls, XRegExp, schema_1) {
+define('vs/language/kusto/languageService/kustoLanguageService',["require", "exports", "./getTimeFilterInfo", "./schema", "vscode-languageserver-types", "xregexp", "./schema"], function (require, exports, getTimeFilterInfo_1, s, ls, XRegExp, schema_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getKustoLanguageService = exports.TokenKind = void 0;
@@ -7346,6 +7442,14 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             // add an horizontal line (* * * in markdown) between them.
             return Promise.resolve({ contents: text });
         };
+        KustoLanguageService.prototype.getTimeFilterInfo = function (document, cursorOffset) {
+            if (!document || !this.isIntellisenseV2()) {
+                return Promise.resolve([]);
+            }
+            var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+            var t = 3; // maxFunctionsBodyLookupDepth?
+            return Promise.resolve(getTimeFilterInfo_1.GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
+        };
         Object.defineProperty(KustoLanguageService, "dummySchema", {
             //#region dummy schema for manual testing
             get: function () {
@@ -8036,6 +8140,11 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.setParameters = function (parameters) {
             return this._languageService.setParameters(parameters);
         };
+        KustoWorker.prototype.getTimeFilterInfo = function (uri, cursorOffset) {
+            var document = this._getTextDocument(uri);
+            return this._languageService.getTimeFilterInfo(document, cursorOffset);
+        };
+        ;
         KustoWorker.prototype._getTextDocument = function (uri) {
             var models = this._ctx.getMirrorModels();
             for (var _i = 0, models_1 = models; _i < models_1.length; _i++) {

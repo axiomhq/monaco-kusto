@@ -12,6 +12,7 @@ var __assign = (this && this.__assign) || function () {
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
 /// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
+import { GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
 // polyfill string endsWith
 if (!String.prototype.endsWith) {
@@ -1083,6 +1084,14 @@ var KustoLanguageService = /** @class */ (function () {
         // Instead of just an empty line between the first line (the signature) and the second line (the description)
         // add an horizontal line (* * * in markdown) between them.
         return Promise.resolve({ contents: text });
+    };
+    KustoLanguageService.prototype.getTimeFilterInfo = function (document, cursorOffset) {
+        if (!document || !this.isIntellisenseV2()) {
+            return Promise.resolve([]);
+        }
+        var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+        var t = 3; // maxFunctionsBodyLookupDepth?
+        return Promise.resolve(GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
     };
     Object.defineProperty(KustoLanguageService, "dummySchema", {
         //#region dummy schema for manual testing
