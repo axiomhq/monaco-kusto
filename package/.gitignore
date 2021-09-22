@@ -1,5 +1,6 @@
 **/node_modules/
 /out/
+/release/
 /src/**/*.js.map
 /src/*.js.map
 /test/mode.txt
