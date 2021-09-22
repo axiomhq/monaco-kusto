@@ -1,6 +1,7 @@
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
 /// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
+import { GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
 
 // polyfill string endsWith
@@ -165,6 +166,7 @@ export interface LanguageService {
     getGlobalParams(document: TextDocument): Promise<{ name: string; type: string }[]>;
     getReferencedGlobalParams(document: TextDocument, offset: number): Promise<{ name: string; type: string }[]>;
     getRenderInfo(document: TextDocument, cursorOffset: number): Promise<RenderInfo | undefined>;
+    getTimeFilterInfo(document: TextDocument, cursorOffset: number): Promise<any>;
 }
 
 export type CmSchema = {
@@ -1300,6 +1302,19 @@ class KustoLanguageService implements LanguageService {
         // Instead of just an empty line between the first line (the signature) and the second line (the description)
         // add an horizontal line (* * * in markdown) between them.
         return Promise.resolve({ contents: text });
+    }
+
+
+    getTimeFilterInfo(document: TextDocument, cursorOffset: number): Promise<any | undefined> {
+        if (!document || !this.isIntellisenseV2()) {
+            return Promise.resolve([]);
+        }
+
+        const parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+
+        const t = 3; // maxFunctionsBodyLookupDepth?
+
+        return Promise.resolve(GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
     }
 
     //#region dummy schema for manual testing
