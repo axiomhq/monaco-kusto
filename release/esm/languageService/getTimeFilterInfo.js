@@ -87,3 +87,27 @@ export function GetTimeFilterInfoInternal(e, t) {
     }
     return (n.isContainTimeFilter = !1), n;
 }
+export function GetTables(e) {
+    var tables = TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameReference, function (node) {
+        var nameRef = node;
+        return nameRef.ResultType.IsTabular;
+    }).map(function (nameNode) {
+        return nameNode.Name.SimpleName;
+    });
+    return tables;
+}
+// Working code to get the type of an extends expression. Not being used in the hopes the backend
+// will offer a better way.
+// export function GetExtendsResultType(extendsVarName: string, e: syntax.SyntaxNode) {
+//   const foundNode = TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.NameDeclaration, function (node) {
+//     const nameDec = (node as Kusto.Language.Syntax.NameDeclaration);
+//     return nameDec.Name.SimpleName === extendsVarName;
+//   });
+//   if (foundNode) {
+//     const nameDecNode = foundNode as syntax.NameDeclaration;
+//     if (nameDecNode.Parent.Kind === Kusto.Language.Syntax.SyntaxKind.SimpleNamedExpression) {
+//       const parentNode = nameDecNode.Parent as syntax.SimpleNamedExpression;
+//       return parentNode.ResultType.Name;
+//     }
+//   }
+// }

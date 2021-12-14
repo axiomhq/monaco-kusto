@@ -12,7 +12,7 @@ var __assign = (this && this.__assign) || function () {
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
 /// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
-import { GetTimeFilterInfoInternal } from './getTimeFilterInfo';
+import { GetTables, GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
 // polyfill string endsWith
 if (!String.prototype.endsWith) {
@@ -1092,6 +1092,11 @@ var KustoLanguageService = /** @class */ (function () {
         var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
         var t = 3; // maxFunctionsBodyLookupDepth?
         return Promise.resolve(GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
+    };
+    KustoLanguageService.prototype.getTables = function (document, cursorOffset) {
+        var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+        var tables = GetTables(parsedAndAnalyzed.Syntax);
+        return Promise.resolve(tables);
     };
     Object.defineProperty(KustoLanguageService, "dummySchema", {
         //#region dummy schema for manual testing
