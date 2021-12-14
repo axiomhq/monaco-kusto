@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
 /// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
-import { GetTimeFilterInfoInternal } from './getTimeFilterInfo';
+import { GetTables, GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
 
 // polyfill string endsWith
@@ -167,6 +167,7 @@ export interface LanguageService {
     getReferencedGlobalParams(document: TextDocument, offset: number): Promise<{ name: string; type: string }[]>;
     getRenderInfo(document: TextDocument, cursorOffset: number): Promise<RenderInfo | undefined>;
     getTimeFilterInfo(document: TextDocument, cursorOffset: number): Promise<any>;
+    getTables(document: TextDocument, cursorOffset: number): Promise<any>;
 }
 
 export type CmSchema = {
@@ -1315,6 +1316,14 @@ class KustoLanguageService implements LanguageService {
         const t = 3; // maxFunctionsBodyLookupDepth?
 
         return Promise.resolve(GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
+    }
+
+    getTables(document: TextDocument, cursorOffset: number): Promise<any> {
+        const parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+        
+        const tables = GetTables(parsedAndAnalyzed.Syntax);
+
+        return Promise.resolve(tables);
     }
 
     //#region dummy schema for manual testing

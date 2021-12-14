@@ -1,7 +1,7 @@
 define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.GetTimeFilterInfoInternal = void 0;
+    exports.GetTables = exports.GetTimeFilterInfoInternal = void 0;
     var Utilities = /** @class */ (function () {
         function Utilities() {
         }
@@ -92,8 +92,33 @@ define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "export
         return (n.isContainTimeFilter = !1), n;
     }
     exports.GetTimeFilterInfoInternal = GetTimeFilterInfoInternal;
+    function GetTables(e) {
+        var tables = TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameReference, function (node) {
+            var nameRef = node;
+            return nameRef.ResultType.IsTabular;
+        }).map(function (nameNode) {
+            return nameNode.Name.SimpleName;
+        });
+        return tables;
+    }
+    exports.GetTables = GetTables;
 });
-
+// Working code to get the type of an extends expression. Not being used in the hopes the backend
+// will offer a better way.
+// export function GetExtendsResultType(extendsVarName: string, e: syntax.SyntaxNode) {
+//   const foundNode = TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.NameDeclaration, function (node) {
+//     const nameDec = (node as Kusto.Language.Syntax.NameDeclaration);
+//     return nameDec.Name.SimpleName === extendsVarName;
+//   });
+//   if (foundNode) {
+//     const nameDecNode = foundNode as syntax.NameDeclaration;
+//     if (nameDecNode.Parent.Kind === Kusto.Language.Syntax.SyntaxKind.SimpleNamedExpression) {
+//       const parentNode = nameDecNode.Parent as syntax.SimpleNamedExpression;
+//       return parentNode.ResultType.Name;
+//     }
+//   }
+// }
+;
 // Definition of schema object in the context of language services. This model is exposed to consumers of this library.
 define('vs/language/kusto/languageService/schema',["require", "exports"], function (require, exports) {
     "use strict";
@@ -7450,6 +7475,11 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             var t = 3; // maxFunctionsBodyLookupDepth?
             return Promise.resolve(getTimeFilterInfo_1.GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
         };
+        KustoLanguageService.prototype.getTables = function (document, cursorOffset) {
+            var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+            var tables = getTimeFilterInfo_1.GetTables(parsedAndAnalyzed.Syntax);
+            return Promise.resolve(tables);
+        };
         Object.defineProperty(KustoLanguageService, "dummySchema", {
             //#region dummy schema for manual testing
             get: function () {
@@ -8145,6 +8175,10 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
             return this._languageService.getTimeFilterInfo(document, cursorOffset);
         };
         ;
+        KustoWorker.prototype.getTables = function (uri, cursorOffset) {
+            var document = this._getTextDocument(uri);
+            return this._languageService.getTables(document, cursorOffset);
+        };
         KustoWorker.prototype._getTextDocument = function (uri) {
             var models = this._ctx.getMirrorModels();
             for (var _i = 0, models_1 = models; _i < models_1.length; _i++) {

@@ -186,6 +186,10 @@ var KustoWorker = /** @class */ (function () {
         return this._languageService.getTimeFilterInfo(document, cursorOffset);
     };
     ;
+    KustoWorker.prototype.getTables = function (uri, cursorOffset) {
+        var document = this._getTextDocument(uri);
+        return this._languageService.getTables(document, cursorOffset);
+    };
     KustoWorker.prototype._getTextDocument = function (uri) {
         var models = this._ctx.getMirrorModels();
         for (var _i = 0, models_1 = models; _i < models_1.length; _i++) {

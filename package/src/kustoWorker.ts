@@ -252,7 +252,13 @@ export class KustoWorker {
         const document = this._getTextDocument(uri);
 
         return this._languageService.getTimeFilterInfo(document, cursorOffset);
-      };
+    };
+
+    getTables(uri: string, cursorOffset: number) {
+        const document = this._getTextDocument(uri);
+
+        return this._languageService.getTables(document, cursorOffset);
+    }
 
     private _getTextDocument(uri: string): ls.TextDocument {
         let models = this._ctx.getMirrorModels();
