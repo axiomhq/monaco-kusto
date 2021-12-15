@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
- * monaco-kusto version: 4.0.5(undefined)
+ * monaco-kusto version: 4.1.0(undefined)
  * Released under the MIT license
  * https://https://github.com/Azure/monaco-kusto/blob/master/README.md
  *-----------------------------------------------------------------------------*/
