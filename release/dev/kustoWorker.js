@@ -1,7 +1,7 @@
 define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.GetTables = exports.GetTimeFilterInfoInternal = void 0;
+    exports.GetResultTypes = exports.GetTables = exports.GetTimeFilterInfoInternal = void 0;
     var Utilities = /** @class */ (function () {
         function Utilities() {
         }
@@ -102,23 +102,33 @@ define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "export
         return tables;
     }
     exports.GetTables = GetTables;
+    // Working code to get the type of an extends expression. Not being used in the hopes the backend
+    // will offer a better way.
+    // export function GetExtendsResultType(extendsVarName: string, e: syntax.SyntaxNode) {
+    //   const foundNode = TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.NameDeclaration, function (node) {
+    //     const nameDec = (node as Kusto.Language.Syntax.NameDeclaration);
+    //     return nameDec.Name.SimpleName === extendsVarName;
+    //   });
+    //   if (foundNode) {
+    //     const nameDecNode = foundNode as syntax.NameDeclaration;
+    //     if (nameDecNode.Parent.Kind === Kusto.Language.Syntax.SyntaxKind.SimpleNamedExpression) {
+    //       const parentNode = nameDecNode.Parent as syntax.SimpleNamedExpression;
+    //       return parentNode.ResultType.Name;
+    //     }
+    //   }
+    // }
+    // Get the types of name declarations (extends?)
+    function GetResultTypes(e) {
+        var mapNodeResultTypes = {};
+        TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameDeclaration).forEach(function (node) {
+            var namedNode = node;
+            mapNodeResultTypes[namedNode.Name.SimpleName] = namedNode.ResultType.Name;
+        });
+        return mapNodeResultTypes;
+    }
+    exports.GetResultTypes = GetResultTypes;
 });
-// Working code to get the type of an extends expression. Not being used in the hopes the backend
-// will offer a better way.
-// export function GetExtendsResultType(extendsVarName: string, e: syntax.SyntaxNode) {
-//   const foundNode = TokensUtilities.getFirstSyntaxNode(e, Kusto.Language.Syntax.NameDeclaration, function (node) {
-//     const nameDec = (node as Kusto.Language.Syntax.NameDeclaration);
-//     return nameDec.Name.SimpleName === extendsVarName;
-//   });
-//   if (foundNode) {
-//     const nameDecNode = foundNode as syntax.NameDeclaration;
-//     if (nameDecNode.Parent.Kind === Kusto.Language.Syntax.SyntaxKind.SimpleNamedExpression) {
-//       const parentNode = nameDecNode.Parent as syntax.SimpleNamedExpression;
-//       return parentNode.ResultType.Name;
-//     }
-//   }
-// }
-;
+
 // Definition of schema object in the context of language services. This model is exposed to consumers of this library.
 define('vs/language/kusto/languageService/schema',["require", "exports"], function (require, exports) {
     "use strict";
@@ -7480,6 +7490,11 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             var tables = getTimeFilterInfo_1.GetTables(parsedAndAnalyzed.Syntax);
             return Promise.resolve(tables);
         };
+        KustoLanguageService.prototype.getResultTypes = function (document, cursorOffset) {
+            var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
+            var resultTypes = getTimeFilterInfo_1.GetResultTypes(parsedAndAnalyzed.Syntax);
+            return Promise.resolve(resultTypes);
+        };
         Object.defineProperty(KustoLanguageService, "dummySchema", {
             //#region dummy schema for manual testing
             get: function () {
@@ -8178,6 +8193,10 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getTables = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             return this._languageService.getTables(document, cursorOffset);
+        };
+        KustoWorker.prototype.getResultTypes = function (uri, cursorOffset) {
+            var document = this._getTextDocument(uri);
+            return this._languageService.getResultTypes(document, cursorOffset);
         };
         KustoWorker.prototype._getTextDocument = function (uri) {
             var models = this._ctx.getMirrorModels();
