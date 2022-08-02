@@ -111,3 +111,12 @@ export function GetTables(e) {
 //     }
 //   }
 // }
+// Get the types of name declarations (extends?)
+export function GetResultTypes(e) {
+    var mapNodeResultTypes = {};
+    TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameDeclaration).forEach(function (node) {
+        var namedNode = node;
+        mapNodeResultTypes[namedNode.Name.SimpleName] = namedNode.ResultType.Name;
+    });
+    return mapNodeResultTypes;
+}
