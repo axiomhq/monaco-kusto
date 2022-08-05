@@ -132,6 +132,22 @@ There are 2 APIs to set a Kusto schema:
 
 ## Changelog
 
+### 4.1.8
+
+- fix: trigger suggestion when previous suggestion selected.
+
+### 4.1.6
+
+- fix: low color contrast for foreground/background in suggestWidget for dark theme
+
+### 4.1.3
+
+- fix: low color contrast for foreground/background in suggestWidget
+
+### 4.0.6
+
+- fix: `setSchemaFromShowSchema` now supports for external tables.
+
 ### 4.0.3
 
 - fix: update language service to latest version. fixes issues with scan operator being shown first in completion list.

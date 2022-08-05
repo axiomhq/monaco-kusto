@@ -11,6 +11,22 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.setSchema = function (schema) {
         return this._languageService.setSchema(schema);
     };
+    KustoWorker.prototype.addClusterToSchema = function (uri, clusterName, databasesNames) {
+        var document = this._getTextDocument(uri);
+        if (!document) {
+            console.error("addClusterToSchema: document is " + document + ". uri is " + uri);
+            return Promise.resolve();
+        }
+        return this._languageService.addClusterToSchema(document, clusterName, databasesNames);
+    };
+    KustoWorker.prototype.addDatabaseToSchema = function (uri, clusterName, databaseSchema) {
+        var document = this._getTextDocument(uri);
+        if (!document) {
+            console.error("addDatabaseToSchema: document is " + document + ". uri is " + uri);
+            return Promise.resolve();
+        }
+        return this._languageService.addDatabaseToSchema(document, clusterName, databaseSchema);
+    };
     KustoWorker.prototype.setSchemaFromShowSchema = function (schema, clusterConnectionString, databaseInContextName) {
         return this._languageService.setSchemaFromShowSchema(schema, clusterConnectionString, databaseInContextName);
     };
@@ -193,6 +209,20 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getResultTypes = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
         return this._languageService.getResultTypes(document, cursorOffset);
+    };
+    KustoWorker.prototype.getClusterReferences = function (uri, cursorOffset) {
+        var document = this._getTextDocument(uri);
+        if (!document) {
+            return Promise.resolve(null);
+        }
+        return this._languageService.getClusterReferences(document, cursorOffset);
+    };
+    KustoWorker.prototype.getDatabaseReferences = function (uri, cursorOffset) {
+        var document = this._getTextDocument(uri);
+        if (!document) {
+            return Promise.resolve(null);
+        }
+        return this._languageService.getDatabaseReferences(document, cursorOffset);
     };
     KustoWorker.prototype._getTextDocument = function (uri) {
         var models = this._ctx.getMirrorModels();

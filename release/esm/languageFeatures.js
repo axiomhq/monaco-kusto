@@ -16,20 +16,20 @@ var DiagnosticsAdapter = /** @class */ (function () {
         this._configurationListener = Object.create(null);
         this._schemaListener = Object.create(null);
         var onModelAdd = function (model) {
-            var modeId = model.getModeId();
-            if (modeId !== _this._languageId) {
+            var languageId = model.getLanguageId();
+            if (languageId !== _this._languageId) {
                 return;
             }
-            var debouncedValidation = _.debounce(function (intervals) { return _this._doValidate(model, modeId, intervals); }, 500);
+            var debouncedValidation = _.debounce(function (intervals) { return _this._doValidate(model, languageId, intervals); }, 500);
             _this._contentListener[model.uri.toString()] = model.onDidChangeContent(function (e) {
                 var intervalsToValidate = changeEventToIntervals(e);
                 debouncedValidation(intervalsToValidate);
             });
             _this._configurationListener[model.uri.toString()] = _this.defaults.onDidChange(function () {
-                self.setTimeout(function () { return _this._doValidate(model, modeId, []); }, 0);
+                self.setTimeout(function () { return _this._doValidate(model, languageId, []); }, 0);
             });
             _this._schemaListener[model.uri.toString()] = onSchemaChange(function () {
-                self.setTimeout(function () { return _this._doValidate(model, modeId, []); }, 0);
+                self.setTimeout(function () { return _this._doValidate(model, languageId, []); }, 0);
             });
         };
         var onModelRemoved = function (model) {
@@ -89,20 +89,21 @@ var DiagnosticsAdapter = /** @class */ (function () {
             }
             var markers = diagnostics.map(function (d) { return toDiagnostics(resource, d); });
             var model = _this._monacoInstance.editor.getModel(resource);
-            var oldDecorations = model.getAllDecorations()
-                .filter(function (decoration) { return decoration.options.className == "squiggly-error"; })
+            var oldDecorations = model
+                .getAllDecorations()
+                .filter(function (decoration) { return decoration.options.className == 'squiggly-error'; })
                 .map(function (decoration) { return decoration.id; });
-            if (model && model.getModeId() === languageId) {
+            if (model && model.getLanguageId() === languageId) {
                 var syntaxErrorAsMarkDown = _this.defaults.languageSettings.syntaxErrorAsMarkDown;
                 if (!syntaxErrorAsMarkDown || !syntaxErrorAsMarkDown.enableSyntaxErrorAsMarkDown) {
-                    // Remove previous syntax error decorations and set the new markers (for example, when disabling syntaxErrorAsMarkDown after it was enabled)                
+                    // Remove previous syntax error decorations and set the new markers (for example, when disabling syntaxErrorAsMarkDown after it was enabled)
                     model.deltaDecorations(oldDecorations, []);
                     _this._monacoInstance.editor.setModelMarkers(model, languageId, markers);
                 }
                 else {
                     // Add custom popup for syntax error: icon, header and message as markdown
-                    var header = syntaxErrorAsMarkDown.header ? "**" + syntaxErrorAsMarkDown.header + "** \n\n" : "";
-                    var icon = syntaxErrorAsMarkDown.icon ? "![](" + syntaxErrorAsMarkDown.icon + ")" : "";
+                    var header = syntaxErrorAsMarkDown.header ? "**" + syntaxErrorAsMarkDown.header + "** \n\n" : '';
+                    var icon = syntaxErrorAsMarkDown.icon ? "![](" + syntaxErrorAsMarkDown.icon + ")" : '';
                     var popupErrorHoverHeaderMessage_1 = icon + " " + header;
                     var newDecorations = markers.map(function (marker) {
                         return {
@@ -110,30 +111,32 @@ var DiagnosticsAdapter = /** @class */ (function () {
                                 startLineNumber: marker.startLineNumber,
                                 startColumn: marker.startColumn,
                                 endLineNumber: marker.endLineNumber,
-                                endColumn: marker.endColumn
+                                endColumn: marker.endColumn,
                             },
                             options: {
                                 hoverMessage: {
-                                    value: popupErrorHoverHeaderMessage_1 + marker.message
+                                    value: popupErrorHoverHeaderMessage_1 + marker.message,
                                 },
-                                className: "squiggly-error",
+                                className: 'squiggly-error',
                                 zIndex: 100,
                                 overviewRuler: {
                                     // The color indication on the right ruler
-                                    color: "rgb(255, 18, 18, 0.7)",
-                                    position: monaco.editor.OverviewRulerLane.Right
+                                    color: 'rgb(255, 18, 18, 0.7)',
+                                    position: monaco.editor.OverviewRulerLane.Right,
                                 },
                                 minimap: {
-                                    color: "rgb(255, 18, 18, 0.7)",
-                                    position: monaco.editor.MinimapPosition.Inline
-                                }
-                            }
+                                    color: 'rgb(255, 18, 18, 0.7)',
+                                    position: monaco.editor.MinimapPosition.Inline,
+                                },
+                            },
                         };
                     });
-                    var oldMarkers = monaco.editor.getModelMarkers({
+                    var oldMarkers = monaco.editor
+                        .getModelMarkers({
                         owner: languageId,
-                        resource: resource
-                    }).filter(function (marker) { return marker.severity == monaco.MarkerSeverity.Error; });
+                        resource: resource,
+                    })
+                        .filter(function (marker) { return marker.severity == monaco.MarkerSeverity.Error; });
                     if (oldMarkers && oldMarkers.length > 0) {
                         // In case there were previous markers, remove their decorations (for example, when enabling syntaxErrorAsMarkDown after it was disabled)
                         oldDecorations = [];
@@ -280,11 +283,11 @@ var ColorizationAdapter = /** @class */ (function () {
         this.decorations = [];
         injectCss();
         var onModelAdd = function (model) {
-            var modeId = model.getModeId();
-            if (modeId !== _this._languageId) {
+            var languageId = model.getLanguageId();
+            if (languageId !== _this._languageId) {
                 return;
             }
-            var debouncedColorization = _.debounce(function (intervals) { return _this._doColorization(model, modeId, intervals); }, 500);
+            var debouncedColorization = _.debounce(function (intervals) { return _this._doColorization(model, languageId, intervals); }, 500);
             var handle;
             _this._contentListener[model.uri.toString()] = model.onDidChangeContent(function (e) {
                 // Changes are represented as a range in doc before change, plus the text that it was replaced with.
@@ -294,10 +297,10 @@ var ColorizationAdapter = /** @class */ (function () {
                 debouncedColorization(intervalsToColorize);
             });
             _this._configurationListener[model.uri.toString()] = defaults.onDidChange(function () {
-                self.setTimeout(function () { return _this._doColorization(model, modeId, []); }, 0);
+                self.setTimeout(function () { return _this._doColorization(model, languageId, []); }, 0);
             });
             _this._schemaListener[model.uri.toString()] = onSchemaChange(function () {
-                self.setTimeout(function () { return _this._doColorization(model, modeId, []); }, 0);
+                self.setTimeout(function () { return _this._doColorization(model, languageId, []); }, 0);
             });
         };
         var onModelRemoved = function (model) {
@@ -395,7 +398,7 @@ var ColorizationAdapter = /** @class */ (function () {
                 .reduce(function (prev, curr) { return prev.concat(curr); }, []);
             // Flatten decoration groups to an array of decorations
             var newDecorations = decorationRanges.reduce(function (prev, next) { return prev.concat(next.decorations); }, []);
-            if (model && model.getModeId() === languageId) {
+            if (model && model.getLanguageId() === languageId) {
                 _this.decorations = model.deltaDecorations(oldDecorations, newDecorations);
             }
         })
@@ -553,8 +556,7 @@ var CompletionAdapter = /** @class */ (function () {
         var wordInfo = model.getWordUntilPosition(position);
         var wordRange = new Range(position.lineNumber, wordInfo.startColumn, position.lineNumber, wordInfo.endColumn);
         var resource = model.uri;
-        var onDidProvideCompletionItems = this.languageSettings
-            .onDidProvideCompletionItems;
+        var onDidProvideCompletionItems = this.languageSettings.onDidProvideCompletionItems;
         return this._worker(resource)
             .then(function (worker) {
             return worker.doComplete(resource.toString(), fromPosition(position));

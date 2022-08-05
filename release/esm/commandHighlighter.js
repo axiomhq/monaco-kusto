@@ -14,7 +14,7 @@ var KustoCommandHighlighter = /** @class */ (function () {
         // Note that selection update is triggered not only for selection changes, but also just when no text selection is occuring and cursor just moves around.
         // This case is counted as a 0-length selection starting and ending on the cursor position.
         this.editor.onDidChangeCursorSelection(function (changeEvent) {
-            if (_this.editor.getModel().getModeId() !== 'kusto') {
+            if (_this.editor.getModel().getLanguageId() !== 'kusto') {
                 return;
             }
             _this.highlightCommandUnderCursor(changeEvent);
@@ -34,14 +34,18 @@ var KustoCommandHighlighter = /** @class */ (function () {
             return;
         }
         var commandRange = this.editor.getCurrentCommandRange(changeEvent.selection.getStartPosition());
-        var decorations = [{
+        var decorations = [
+            {
                 range: commandRange,
-                options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT
-            }];
+                options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT,
+            },
+        ];
         this.decorations = this.editor.deltaDecorations(this.decorations, decorations);
     };
     KustoCommandHighlighter.ID = 'editor.contrib.kustoCommandHighliter';
-    KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = { className: 'selectionHighlight' };
+    KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = {
+        className: 'selectionHighlight',
+    };
     return KustoCommandHighlighter;
 }());
 export default KustoCommandHighlighter;

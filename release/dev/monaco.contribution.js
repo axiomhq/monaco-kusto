@@ -17,7 +17,7 @@ define('vs/language/kusto/commandHighlighter',["require", "exports"], function (
             // Note that selection update is triggered not only for selection changes, but also just when no text selection is occuring and cursor just moves around.
             // This case is counted as a 0-length selection starting and ending on the cursor position.
             this.editor.onDidChangeCursorSelection(function (changeEvent) {
-                if (_this.editor.getModel().getModeId() !== 'kusto') {
+                if (_this.editor.getModel().getLanguageId() !== 'kusto') {
                     return;
                 }
                 _this.highlightCommandUnderCursor(changeEvent);
@@ -37,14 +37,18 @@ define('vs/language/kusto/commandHighlighter',["require", "exports"], function (
                 return;
             }
             var commandRange = this.editor.getCurrentCommandRange(changeEvent.selection.getStartPosition());
-            var decorations = [{
+            var decorations = [
+                {
                     range: commandRange,
-                    options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT
-                }];
+                    options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT,
+                },
+            ];
             this.decorations = this.editor.deltaDecorations(this.decorations, decorations);
         };
         KustoCommandHighlighter.ID = 'editor.contrib.kustoCommandHighliter';
-        KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = { className: 'selectionHighlight' };
+        KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = {
+            className: 'selectionHighlight',
+        };
         return KustoCommandHighlighter;
     }());
     exports.default = KustoCommandHighlighter;
@@ -61,7 +65,7 @@ define('vs/language/kusto/commandFormatter',["require", "exports"], function (re
             // selection also represents no selection - for example the event gets triggered when moving cursor from point
             // a to point b. in the case start position will equal end position.
             editor.onDidChangeCursorSelection(function (changeEvent) {
-                if (_this.editor.getModel().getModeId() !== 'kusto') {
+                if (_this.editor.getModel().getLanguageId() !== 'kusto') {
                     return;
                 }
                 // Theoretically you would expect this code to run only once in onDidCreateEditor.
@@ -74,11 +78,13 @@ define('vs/language/kusto/commandFormatter',["require", "exports"], function (re
                     editor.addAction({
                         id: 'editor.action.kusto.formatCurrentCommand',
                         label: 'Format Command Under Cursor',
-                        keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_K, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_F)],
+                        keybindings: [
+                            monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF),
+                        ],
                         run: function (ed) {
                             editor.trigger('KustoCommandFormatter', 'editor.action.formatSelection', null);
                         },
-                        contextMenuGroupId: '1_modification'
+                        contextMenuGroupId: '1_modification',
                     });
                     _this.actionAdded = true;
                 }
@@ -191,11 +197,11 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
         enableHover: true,
         formatter: {
             indentationSize: 4,
-            pipeOperatorStyle: 'Smart'
+            pipeOperatorStyle: 'Smart',
         },
         syntaxErrorAsMarkDown: {
-            enableSyntaxErrorAsMarkDown: false
-        }
+            enableSyntaxErrorAsMarkDown: false,
+        },
     };
     function getKustoWorker() {
         return new Promise(function (resolve, reject) {
@@ -271,13 +277,21 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
                 { token: 'annotation', foreground: 'b5cea8' },
                 { token: 'invalid', background: 'cd3131' },
             ],
-            colors: {},
+            colors: {
+            // see: https://code.visualstudio.com/api/references/theme-color#editor-widget-colors
+            // 'editor.background': '#1B1A19', // gray 200
+            // 'editorSuggestWidget.selectedBackground': '#004E8C',
+            },
         });
         monacoInstance.editor.defineTheme('kusto-dark2', {
             base: 'vs-dark',
             inherit: true,
             rules: [],
-            colors: { 'editor.background': '#1B1A19' },
+            colors: {
+                // see: https://code.visualstudio.com/api/references/theme-color#editor-widget-colors
+                'editor.background': '#1B1A19',
+                'editorSuggestWidget.selectedBackground': '#004E8C',
+            },
         });
         // Initialize kusto specific language features that don't currently have a natural way to extend using existing apis.
         // Most other language features are initialized in kustoMode.ts
@@ -296,21 +310,18 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
                 if (kustoDefaults &&
                     kustoDefaults.languageSettings &&
                     kustoDefaults.languageSettings.openSuggestionDialogAfterPreviousSuggestionAccepted) {
-                    var didAcceptSuggestion = event.source === 'modelChange' && event.reason === monaco.editor.CursorChangeReason.RecoverFromMarkers;
+                    var didAcceptSuggestion = event.source === 'snippet' && event.reason === monaco.editor.CursorChangeReason.NotSet;
                     if (!didAcceptSuggestion) {
                         return;
                     }
                     event.selection;
-                    var completionText = editor.getModel().getValueInRange(event.selection);
-                    if (completionText[completionText.length - 1] === ' ') {
-                        // OK so now we in a situation where we know a suggestion was selected and we want to trigger another one.
-                        // the only problem is that the suggestion widget itself listens to this same event in order to know it needs to close.
-                        // The only problem is that we're ahead in line, so we're triggering a suggest operation that will be shut down once
-                        // the next callback is called. This is why we're waiting here - to let all the callbacks run synchronously and be
-                        // the 'last' subscriber to run. Granted this is hacky, but until monaco provides a specific event for suggestions,
-                        // this is the best we have.
-                        setTimeout(function () { return editor.trigger('monaco-kusto', 'editor.action.triggerSuggest', {}); }, 10);
-                    }
+                    // OK so now we in a situation where we know a suggestion was selected and we want to trigger another one.
+                    // the only problem is that the suggestion widget itself listens to this same event in order to know it needs to close.
+                    // The only problem is that we're ahead in line, so we're triggering a suggest operation that will be shut down once
+                    // the next callback is called. This is why we're waiting here - to let all the callbacks run synchronously and be
+                    // the 'last' subscriber to run. Granted this is hacky, but until monaco provides a specific event for suggestions,
+                    // this is the best we have.
+                    setTimeout(function () { return editor.trigger('monaco-kusto', 'editor.action.triggerSuggest', {}); }, 10);
                 }
             });
         }
