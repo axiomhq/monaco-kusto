@@ -214,6 +214,17 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
      * ------------------------------------------------------------------------------------------ */
     'use strict';
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TextDocument = exports.EOL = exports.SelectionRange = exports.DocumentLink = exports.FormattingOptions = exports.CodeLens = exports.CodeAction = exports.CodeActionContext = exports.CodeActionKind = exports.DocumentSymbol = exports.SymbolInformation = exports.SymbolTag = exports.SymbolKind = exports.DocumentHighlight = exports.DocumentHighlightKind = exports.SignatureInformation = exports.ParameterInformation = exports.Hover = exports.MarkedString = exports.CompletionList = exports.CompletionItem = exports.InsertTextMode = exports.InsertReplaceEdit = exports.CompletionItemTag = exports.InsertTextFormat = exports.CompletionItemKind = exports.MarkupContent = exports.MarkupKind = exports.TextDocumentItem = exports.OptionalVersionedTextDocumentIdentifier = exports.VersionedTextDocumentIdentifier = exports.TextDocumentIdentifier = exports.WorkspaceChange = exports.WorkspaceEdit = exports.DeleteFile = exports.RenameFile = exports.CreateFile = exports.TextDocumentEdit = exports.AnnotatedTextEdit = exports.ChangeAnnotationIdentifier = exports.ChangeAnnotation = exports.TextEdit = exports.Command = exports.Diagnostic = exports.CodeDescription = exports.DiagnosticTag = exports.DiagnosticSeverity = exports.DiagnosticRelatedInformation = exports.FoldingRange = exports.FoldingRangeKind = exports.ColorPresentation = exports.ColorInformation = exports.Color = exports.LocationLink = exports.Location = exports.Range = exports.Position = exports.uinteger = exports.integer = void 0;
+    var integer;
+    (function (integer) {
+        integer.MIN_VALUE = -2147483648;
+        integer.MAX_VALUE = 2147483647;
+    })(integer = exports.integer || (exports.integer = {}));
+    var uinteger;
+    (function (uinteger) {
+        uinteger.MIN_VALUE = 0;
+        uinteger.MAX_VALUE = 2147483647;
+    })(uinteger = exports.uinteger || (exports.uinteger = {}));
     /**
      * The Position namespace provides helper functions to work with
      * [Position](#Position) literals.
@@ -226,15 +237,21 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          * @param character The position's character.
          */
         function create(line, character) {
+            if (line === Number.MAX_VALUE) {
+                line = uinteger.MAX_VALUE;
+            }
+            if (character === Number.MAX_VALUE) {
+                character = uinteger.MAX_VALUE;
+            }
             return { line: line, character: character };
         }
         Position.create = create;
         /**
-         * Checks whether the given liternal conforms to the [Position](#Position) interface.
+         * Checks whether the given literal conforms to the [Position](#Position) interface.
          */
         function is(value) {
             var candidate = value;
-            return Is.objectLiteral(candidate) && Is.number(candidate.line) && Is.number(candidate.character);
+            return Is.objectLiteral(candidate) && Is.uinteger(candidate.line) && Is.uinteger(candidate.character);
         }
         Position.is = is;
     })(Position = exports.Position || (exports.Position = {}));
@@ -245,7 +262,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
     var Range;
     (function (Range) {
         function create(one, two, three, four) {
-            if (Is.number(one) && Is.number(two) && Is.number(three) && Is.number(four)) {
+            if (Is.uinteger(one) && Is.uinteger(two) && Is.uinteger(three) && Is.uinteger(four)) {
                 return { start: Position.create(one, two), end: Position.create(three, four) };
             }
             else if (Position.is(one) && Position.is(two)) {
@@ -340,10 +357,10 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.number(candidate.red)
-                && Is.number(candidate.green)
-                && Is.number(candidate.blue)
-                && Is.number(candidate.alpha);
+            return Is.numberRange(candidate.red, 0, 1)
+                && Is.numberRange(candidate.green, 0, 1)
+                && Is.numberRange(candidate.blue, 0, 1)
+                && Is.numberRange(candidate.alpha, 0, 1);
         }
         Color.is = is;
     })(Color = exports.Color || (exports.Color = {}));
@@ -449,9 +466,9 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.number(candidate.startLine) && Is.number(candidate.startLine)
-                && (Is.undefined(candidate.startCharacter) || Is.number(candidate.startCharacter))
-                && (Is.undefined(candidate.endCharacter) || Is.number(candidate.endCharacter))
+            return Is.uinteger(candidate.startLine) && Is.uinteger(candidate.startLine)
+                && (Is.undefined(candidate.startCharacter) || Is.uinteger(candidate.startCharacter))
+                && (Is.undefined(candidate.endCharacter) || Is.uinteger(candidate.endCharacter))
                 && (Is.undefined(candidate.kind) || Is.string(candidate.kind));
         }
         FoldingRange.is = is;
@@ -525,6 +542,19 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         DiagnosticTag.Deprecated = 2;
     })(DiagnosticTag = exports.DiagnosticTag || (exports.DiagnosticTag = {}));
     /**
+     * The CodeDescription namespace provides functions to deal with descriptions for diagnostic codes.
+     *
+     * @since 3.16.0
+     */
+    var CodeDescription;
+    (function (CodeDescription) {
+        function is(value) {
+            var candidate = value;
+            return candidate !== undefined && candidate !== null && Is.string(candidate.href);
+        }
+        CodeDescription.is = is;
+    })(CodeDescription = exports.CodeDescription || (exports.CodeDescription = {}));
+    /**
      * The Diagnostic namespace provides helper functions to work with
      * [Diagnostic](#Diagnostic) literals.
      */
@@ -554,12 +584,14 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          * Checks whether the given literal conforms to the [Diagnostic](#Diagnostic) interface.
          */
         function is(value) {
+            var _a;
             var candidate = value;
             return Is.defined(candidate)
                 && Range.is(candidate.range)
                 && Is.string(candidate.message)
                 && (Is.number(candidate.severity) || Is.undefined(candidate.severity))
-                && (Is.number(candidate.code) || Is.string(candidate.code) || Is.undefined(candidate.code))
+                && (Is.integer(candidate.code) || Is.string(candidate.code) || Is.undefined(candidate.code))
+                && (Is.undefined(candidate.codeDescription) || (Is.string((_a = candidate.codeDescription) === null || _a === void 0 ? void 0 : _a.href)))
                 && (Is.string(candidate.source) || Is.undefined(candidate.source))
                 && (Is.undefined(candidate.relatedInformation) || Is.typedArray(candidate.relatedInformation, DiagnosticRelatedInformation.is));
         }
@@ -635,6 +667,75 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         }
         TextEdit.is = is;
     })(TextEdit = exports.TextEdit || (exports.TextEdit = {}));
+    var ChangeAnnotation;
+    (function (ChangeAnnotation) {
+        function create(label, needsConfirmation, description) {
+            var result = { label: label };
+            if (needsConfirmation !== undefined) {
+                result.needsConfirmation = needsConfirmation;
+            }
+            if (description !== undefined) {
+                result.description = description;
+            }
+            return result;
+        }
+        ChangeAnnotation.create = create;
+        function is(value) {
+            var candidate = value;
+            return candidate !== undefined && Is.objectLiteral(candidate) && Is.string(candidate.label) &&
+                (Is.boolean(candidate.needsConfirmation) || candidate.needsConfirmation === undefined) &&
+                (Is.string(candidate.description) || candidate.description === undefined);
+        }
+        ChangeAnnotation.is = is;
+    })(ChangeAnnotation = exports.ChangeAnnotation || (exports.ChangeAnnotation = {}));
+    var ChangeAnnotationIdentifier;
+    (function (ChangeAnnotationIdentifier) {
+        function is(value) {
+            var candidate = value;
+            return typeof candidate === 'string';
+        }
+        ChangeAnnotationIdentifier.is = is;
+    })(ChangeAnnotationIdentifier = exports.ChangeAnnotationIdentifier || (exports.ChangeAnnotationIdentifier = {}));
+    var AnnotatedTextEdit;
+    (function (AnnotatedTextEdit) {
+        /**
+         * Creates an annotated replace text edit.
+         *
+         * @param range The range of text to be replaced.
+         * @param newText The new text.
+         * @param annotation The annotation.
+         */
+        function replace(range, newText, annotation) {
+            return { range: range, newText: newText, annotationId: annotation };
+        }
+        AnnotatedTextEdit.replace = replace;
+        /**
+         * Creates an annotated insert text edit.
+         *
+         * @param position The position to insert the text at.
+         * @param newText The text to be inserted.
+         * @param annotation The annotation.
+         */
+        function insert(position, newText, annotation) {
+            return { range: { start: position, end: position }, newText: newText, annotationId: annotation };
+        }
+        AnnotatedTextEdit.insert = insert;
+        /**
+         * Creates an annotated delete text edit.
+         *
+         * @param range The range of text to be deleted.
+         * @param annotation The annotation.
+         */
+        function del(range, annotation) {
+            return { range: range, newText: '', annotationId: annotation };
+        }
+        AnnotatedTextEdit.del = del;
+        function is(value) {
+            var candidate = value;
+            return TextEdit.is(candidate) && (ChangeAnnotation.is(candidate.annotationId) || ChangeAnnotationIdentifier.is(candidate.annotationId));
+        }
+        AnnotatedTextEdit.is = is;
+    })(AnnotatedTextEdit = exports.AnnotatedTextEdit || (exports.AnnotatedTextEdit = {}));
     /**
      * The TextDocumentEdit namespace provides helper function to create
      * an edit that manipulates a text document.
@@ -651,72 +752,78 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         function is(value) {
             var candidate = value;
             return Is.defined(candidate)
-                && VersionedTextDocumentIdentifier.is(candidate.textDocument)
+                && OptionalVersionedTextDocumentIdentifier.is(candidate.textDocument)
                 && Array.isArray(candidate.edits);
         }
         TextDocumentEdit.is = is;
     })(TextDocumentEdit = exports.TextDocumentEdit || (exports.TextDocumentEdit = {}));
     var CreateFile;
     (function (CreateFile) {
-        function create(uri, options) {
+        function create(uri, options, annotation) {
             var result = {
                 kind: 'create',
                 uri: uri
             };
-            if (options !== void 0 && (options.overwrite !== void 0 || options.ignoreIfExists !== void 0)) {
+            if (options !== undefined && (options.overwrite !== undefined || options.ignoreIfExists !== undefined)) {
                 result.options = options;
+            }
+            if (annotation !== undefined) {
+                result.annotationId = annotation;
             }
             return result;
         }
         CreateFile.create = create;
         function is(value) {
             var candidate = value;
-            return candidate && candidate.kind === 'create' && Is.string(candidate.uri) &&
-                (candidate.options === void 0 ||
-                    ((candidate.options.overwrite === void 0 || Is.boolean(candidate.options.overwrite)) && (candidate.options.ignoreIfExists === void 0 || Is.boolean(candidate.options.ignoreIfExists))));
+            return candidate && candidate.kind === 'create' && Is.string(candidate.uri) && (candidate.options === undefined ||
+                ((candidate.options.overwrite === undefined || Is.boolean(candidate.options.overwrite)) && (candidate.options.ignoreIfExists === undefined || Is.boolean(candidate.options.ignoreIfExists)))) && (candidate.annotationId === undefined || ChangeAnnotationIdentifier.is(candidate.annotationId));
         }
         CreateFile.is = is;
     })(CreateFile = exports.CreateFile || (exports.CreateFile = {}));
     var RenameFile;
     (function (RenameFile) {
-        function create(oldUri, newUri, options) {
+        function create(oldUri, newUri, options, annotation) {
             var result = {
                 kind: 'rename',
                 oldUri: oldUri,
                 newUri: newUri
             };
-            if (options !== void 0 && (options.overwrite !== void 0 || options.ignoreIfExists !== void 0)) {
+            if (options !== undefined && (options.overwrite !== undefined || options.ignoreIfExists !== undefined)) {
                 result.options = options;
+            }
+            if (annotation !== undefined) {
+                result.annotationId = annotation;
             }
             return result;
         }
         RenameFile.create = create;
         function is(value) {
             var candidate = value;
-            return candidate && candidate.kind === 'rename' && Is.string(candidate.oldUri) && Is.string(candidate.newUri) &&
-                (candidate.options === void 0 ||
-                    ((candidate.options.overwrite === void 0 || Is.boolean(candidate.options.overwrite)) && (candidate.options.ignoreIfExists === void 0 || Is.boolean(candidate.options.ignoreIfExists))));
+            return candidate && candidate.kind === 'rename' && Is.string(candidate.oldUri) && Is.string(candidate.newUri) && (candidate.options === undefined ||
+                ((candidate.options.overwrite === undefined || Is.boolean(candidate.options.overwrite)) && (candidate.options.ignoreIfExists === undefined || Is.boolean(candidate.options.ignoreIfExists)))) && (candidate.annotationId === undefined || ChangeAnnotationIdentifier.is(candidate.annotationId));
         }
         RenameFile.is = is;
     })(RenameFile = exports.RenameFile || (exports.RenameFile = {}));
     var DeleteFile;
     (function (DeleteFile) {
-        function create(uri, options) {
+        function create(uri, options, annotation) {
             var result = {
                 kind: 'delete',
                 uri: uri
             };
-            if (options !== void 0 && (options.recursive !== void 0 || options.ignoreIfNotExists !== void 0)) {
+            if (options !== undefined && (options.recursive !== undefined || options.ignoreIfNotExists !== undefined)) {
                 result.options = options;
+            }
+            if (annotation !== undefined) {
+                result.annotationId = annotation;
             }
             return result;
         }
         DeleteFile.create = create;
         function is(value) {
             var candidate = value;
-            return candidate && candidate.kind === 'delete' && Is.string(candidate.uri) &&
-                (candidate.options === void 0 ||
-                    ((candidate.options.recursive === void 0 || Is.boolean(candidate.options.recursive)) && (candidate.options.ignoreIfNotExists === void 0 || Is.boolean(candidate.options.ignoreIfNotExists))));
+            return candidate && candidate.kind === 'delete' && Is.string(candidate.uri) && (candidate.options === undefined ||
+                ((candidate.options.recursive === undefined || Is.boolean(candidate.options.recursive)) && (candidate.options.ignoreIfNotExists === undefined || Is.boolean(candidate.options.ignoreIfNotExists)))) && (candidate.annotationId === undefined || ChangeAnnotationIdentifier.is(candidate.annotationId));
         }
         DeleteFile.is = is;
     })(DeleteFile = exports.DeleteFile || (exports.DeleteFile = {}));
@@ -725,8 +832,8 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         function is(value) {
             var candidate = value;
             return candidate &&
-                (candidate.changes !== void 0 || candidate.documentChanges !== void 0) &&
-                (candidate.documentChanges === void 0 || candidate.documentChanges.every(function (change) {
+                (candidate.changes !== undefined || candidate.documentChanges !== undefined) &&
+                (candidate.documentChanges === undefined || candidate.documentChanges.every(function (change) {
                     if (Is.string(change.kind)) {
                         return CreateFile.is(change) || RenameFile.is(change) || DeleteFile.is(change);
                     }
@@ -738,17 +845,69 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         WorkspaceEdit.is = is;
     })(WorkspaceEdit = exports.WorkspaceEdit || (exports.WorkspaceEdit = {}));
     var TextEditChangeImpl = /** @class */ (function () {
-        function TextEditChangeImpl(edits) {
+        function TextEditChangeImpl(edits, changeAnnotations) {
             this.edits = edits;
+            this.changeAnnotations = changeAnnotations;
         }
-        TextEditChangeImpl.prototype.insert = function (position, newText) {
-            this.edits.push(TextEdit.insert(position, newText));
+        TextEditChangeImpl.prototype.insert = function (position, newText, annotation) {
+            var edit;
+            var id;
+            if (annotation === undefined) {
+                edit = TextEdit.insert(position, newText);
+            }
+            else if (ChangeAnnotationIdentifier.is(annotation)) {
+                id = annotation;
+                edit = AnnotatedTextEdit.insert(position, newText, annotation);
+            }
+            else {
+                this.assertChangeAnnotations(this.changeAnnotations);
+                id = this.changeAnnotations.manage(annotation);
+                edit = AnnotatedTextEdit.insert(position, newText, id);
+            }
+            this.edits.push(edit);
+            if (id !== undefined) {
+                return id;
+            }
         };
-        TextEditChangeImpl.prototype.replace = function (range, newText) {
-            this.edits.push(TextEdit.replace(range, newText));
+        TextEditChangeImpl.prototype.replace = function (range, newText, annotation) {
+            var edit;
+            var id;
+            if (annotation === undefined) {
+                edit = TextEdit.replace(range, newText);
+            }
+            else if (ChangeAnnotationIdentifier.is(annotation)) {
+                id = annotation;
+                edit = AnnotatedTextEdit.replace(range, newText, annotation);
+            }
+            else {
+                this.assertChangeAnnotations(this.changeAnnotations);
+                id = this.changeAnnotations.manage(annotation);
+                edit = AnnotatedTextEdit.replace(range, newText, id);
+            }
+            this.edits.push(edit);
+            if (id !== undefined) {
+                return id;
+            }
         };
-        TextEditChangeImpl.prototype.delete = function (range) {
-            this.edits.push(TextEdit.del(range));
+        TextEditChangeImpl.prototype.delete = function (range, annotation) {
+            var edit;
+            var id;
+            if (annotation === undefined) {
+                edit = TextEdit.del(range);
+            }
+            else if (ChangeAnnotationIdentifier.is(annotation)) {
+                id = annotation;
+                edit = AnnotatedTextEdit.del(range, annotation);
+            }
+            else {
+                this.assertChangeAnnotations(this.changeAnnotations);
+                id = this.changeAnnotations.manage(annotation);
+                edit = AnnotatedTextEdit.del(range, id);
+            }
+            this.edits.push(edit);
+            if (id !== undefined) {
+                return id;
+            }
         };
         TextEditChangeImpl.prototype.add = function (edit) {
             this.edits.push(edit);
@@ -759,7 +918,56 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         TextEditChangeImpl.prototype.clear = function () {
             this.edits.splice(0, this.edits.length);
         };
+        TextEditChangeImpl.prototype.assertChangeAnnotations = function (value) {
+            if (value === undefined) {
+                throw new Error("Text edit change is not configured to manage change annotations.");
+            }
+        };
         return TextEditChangeImpl;
+    }());
+    /**
+     * A helper class
+     */
+    var ChangeAnnotations = /** @class */ (function () {
+        function ChangeAnnotations(annotations) {
+            this._annotations = annotations === undefined ? Object.create(null) : annotations;
+            this._counter = 0;
+            this._size = 0;
+        }
+        ChangeAnnotations.prototype.all = function () {
+            return this._annotations;
+        };
+        Object.defineProperty(ChangeAnnotations.prototype, "size", {
+            get: function () {
+                return this._size;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        ChangeAnnotations.prototype.manage = function (idOrAnnotation, annotation) {
+            var id;
+            if (ChangeAnnotationIdentifier.is(idOrAnnotation)) {
+                id = idOrAnnotation;
+            }
+            else {
+                id = this.nextId();
+                annotation = idOrAnnotation;
+            }
+            if (this._annotations[id] !== undefined) {
+                throw new Error("Id " + id + " is already in use.");
+            }
+            if (annotation === undefined) {
+                throw new Error("No annotation provided for id " + id);
+            }
+            this._annotations[id] = annotation;
+            this._size++;
+            return id;
+        };
+        ChangeAnnotations.prototype.nextId = function () {
+            this._counter++;
+            return this._counter.toString();
+        };
+        return ChangeAnnotations;
     }());
     /**
      * A workspace change helps constructing changes to a workspace.
@@ -768,12 +976,14 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         function WorkspaceChange(workspaceEdit) {
             var _this = this;
             this._textEditChanges = Object.create(null);
-            if (workspaceEdit) {
+            if (workspaceEdit !== undefined) {
                 this._workspaceEdit = workspaceEdit;
                 if (workspaceEdit.documentChanges) {
+                    this._changeAnnotations = new ChangeAnnotations(workspaceEdit.changeAnnotations);
+                    workspaceEdit.changeAnnotations = this._changeAnnotations.all();
                     workspaceEdit.documentChanges.forEach(function (change) {
                         if (TextDocumentEdit.is(change)) {
-                            var textEditChange = new TextEditChangeImpl(change.edits);
+                            var textEditChange = new TextEditChangeImpl(change.edits, _this._changeAnnotations);
                             _this._textEditChanges[change.textDocument.uri] = textEditChange;
                         }
                     });
@@ -785,6 +995,9 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
                     });
                 }
             }
+            else {
+                this._workspaceEdit = {};
+            }
         }
         Object.defineProperty(WorkspaceChange.prototype, "edit", {
             /**
@@ -792,22 +1005,27 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
              * use to be returned from a workspace edit operation like rename.
              */
             get: function () {
+                this.initDocumentChanges();
+                if (this._changeAnnotations !== undefined) {
+                    if (this._changeAnnotations.size === 0) {
+                        this._workspaceEdit.changeAnnotations = undefined;
+                    }
+                    else {
+                        this._workspaceEdit.changeAnnotations = this._changeAnnotations.all();
+                    }
+                }
                 return this._workspaceEdit;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         WorkspaceChange.prototype.getTextEditChange = function (key) {
-            if (VersionedTextDocumentIdentifier.is(key)) {
-                if (!this._workspaceEdit) {
-                    this._workspaceEdit = {
-                        documentChanges: []
-                    };
-                }
-                if (!this._workspaceEdit.documentChanges) {
+            if (OptionalVersionedTextDocumentIdentifier.is(key)) {
+                this.initDocumentChanges();
+                if (this._workspaceEdit.documentChanges === undefined) {
                     throw new Error('Workspace edit is not configured for document changes.');
                 }
-                var textDocument = key;
+                var textDocument = { uri: key.uri, version: key.version };
                 var result = this._textEditChanges[textDocument.uri];
                 if (!result) {
                     var edits = [];
@@ -816,18 +1034,14 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
                         edits: edits
                     };
                     this._workspaceEdit.documentChanges.push(textDocumentEdit);
-                    result = new TextEditChangeImpl(edits);
+                    result = new TextEditChangeImpl(edits, this._changeAnnotations);
                     this._textEditChanges[textDocument.uri] = result;
                 }
                 return result;
             }
             else {
-                if (!this._workspaceEdit) {
-                    this._workspaceEdit = {
-                        changes: Object.create(null)
-                    };
-                }
-                if (!this._workspaceEdit.changes) {
+                this.initChanges();
+                if (this._workspaceEdit.changes === undefined) {
                     throw new Error('Workspace edit is not configured for normal text edit changes.');
                 }
                 var result = this._textEditChanges[key];
@@ -840,21 +1054,94 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
                 return result;
             }
         };
-        WorkspaceChange.prototype.createFile = function (uri, options) {
-            this.checkDocumentChanges();
-            this._workspaceEdit.documentChanges.push(CreateFile.create(uri, options));
+        WorkspaceChange.prototype.initDocumentChanges = function () {
+            if (this._workspaceEdit.documentChanges === undefined && this._workspaceEdit.changes === undefined) {
+                this._changeAnnotations = new ChangeAnnotations();
+                this._workspaceEdit.documentChanges = [];
+                this._workspaceEdit.changeAnnotations = this._changeAnnotations.all();
+            }
         };
-        WorkspaceChange.prototype.renameFile = function (oldUri, newUri, options) {
-            this.checkDocumentChanges();
-            this._workspaceEdit.documentChanges.push(RenameFile.create(oldUri, newUri, options));
+        WorkspaceChange.prototype.initChanges = function () {
+            if (this._workspaceEdit.documentChanges === undefined && this._workspaceEdit.changes === undefined) {
+                this._workspaceEdit.changes = Object.create(null);
+            }
         };
-        WorkspaceChange.prototype.deleteFile = function (uri, options) {
-            this.checkDocumentChanges();
-            this._workspaceEdit.documentChanges.push(DeleteFile.create(uri, options));
-        };
-        WorkspaceChange.prototype.checkDocumentChanges = function () {
-            if (!this._workspaceEdit || !this._workspaceEdit.documentChanges) {
+        WorkspaceChange.prototype.createFile = function (uri, optionsOrAnnotation, options) {
+            this.initDocumentChanges();
+            if (this._workspaceEdit.documentChanges === undefined) {
                 throw new Error('Workspace edit is not configured for document changes.');
+            }
+            var annotation;
+            if (ChangeAnnotation.is(optionsOrAnnotation) || ChangeAnnotationIdentifier.is(optionsOrAnnotation)) {
+                annotation = optionsOrAnnotation;
+            }
+            else {
+                options = optionsOrAnnotation;
+            }
+            var operation;
+            var id;
+            if (annotation === undefined) {
+                operation = CreateFile.create(uri, options);
+            }
+            else {
+                id = ChangeAnnotationIdentifier.is(annotation) ? annotation : this._changeAnnotations.manage(annotation);
+                operation = CreateFile.create(uri, options, id);
+            }
+            this._workspaceEdit.documentChanges.push(operation);
+            if (id !== undefined) {
+                return id;
+            }
+        };
+        WorkspaceChange.prototype.renameFile = function (oldUri, newUri, optionsOrAnnotation, options) {
+            this.initDocumentChanges();
+            if (this._workspaceEdit.documentChanges === undefined) {
+                throw new Error('Workspace edit is not configured for document changes.');
+            }
+            var annotation;
+            if (ChangeAnnotation.is(optionsOrAnnotation) || ChangeAnnotationIdentifier.is(optionsOrAnnotation)) {
+                annotation = optionsOrAnnotation;
+            }
+            else {
+                options = optionsOrAnnotation;
+            }
+            var operation;
+            var id;
+            if (annotation === undefined) {
+                operation = RenameFile.create(oldUri, newUri, options);
+            }
+            else {
+                id = ChangeAnnotationIdentifier.is(annotation) ? annotation : this._changeAnnotations.manage(annotation);
+                operation = RenameFile.create(oldUri, newUri, options, id);
+            }
+            this._workspaceEdit.documentChanges.push(operation);
+            if (id !== undefined) {
+                return id;
+            }
+        };
+        WorkspaceChange.prototype.deleteFile = function (uri, optionsOrAnnotation, options) {
+            this.initDocumentChanges();
+            if (this._workspaceEdit.documentChanges === undefined) {
+                throw new Error('Workspace edit is not configured for document changes.');
+            }
+            var annotation;
+            if (ChangeAnnotation.is(optionsOrAnnotation) || ChangeAnnotationIdentifier.is(optionsOrAnnotation)) {
+                annotation = optionsOrAnnotation;
+            }
+            else {
+                options = optionsOrAnnotation;
+            }
+            var operation;
+            var id;
+            if (annotation === undefined) {
+                operation = DeleteFile.create(uri, options);
+            }
+            else {
+                id = ChangeAnnotationIdentifier.is(annotation) ? annotation : this._changeAnnotations.manage(annotation);
+                operation = DeleteFile.create(uri, options, id);
+            }
+            this._workspaceEdit.documentChanges.push(operation);
+            if (id !== undefined) {
+                return id;
             }
         };
         return WorkspaceChange;
@@ -903,10 +1190,34 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.defined(candidate) && Is.string(candidate.uri) && (candidate.version === null || Is.number(candidate.version));
+            return Is.defined(candidate) && Is.string(candidate.uri) && Is.integer(candidate.version);
         }
         VersionedTextDocumentIdentifier.is = is;
     })(VersionedTextDocumentIdentifier = exports.VersionedTextDocumentIdentifier || (exports.VersionedTextDocumentIdentifier = {}));
+    /**
+     * The OptionalVersionedTextDocumentIdentifier namespace provides helper functions to work with
+     * [OptionalVersionedTextDocumentIdentifier](#OptionalVersionedTextDocumentIdentifier) literals.
+     */
+    var OptionalVersionedTextDocumentIdentifier;
+    (function (OptionalVersionedTextDocumentIdentifier) {
+        /**
+         * Creates a new OptionalVersionedTextDocumentIdentifier literal.
+         * @param uri The document's uri.
+         * @param uri The document's text.
+         */
+        function create(uri, version) {
+            return { uri: uri, version: version };
+        }
+        OptionalVersionedTextDocumentIdentifier.create = create;
+        /**
+         * Checks whether the given literal conforms to the [OptionalVersionedTextDocumentIdentifier](#OptionalVersionedTextDocumentIdentifier) interface.
+         */
+        function is(value) {
+            var candidate = value;
+            return Is.defined(candidate) && Is.string(candidate.uri) && (candidate.version === null || Is.integer(candidate.version));
+        }
+        OptionalVersionedTextDocumentIdentifier.is = is;
+    })(OptionalVersionedTextDocumentIdentifier = exports.OptionalVersionedTextDocumentIdentifier || (exports.OptionalVersionedTextDocumentIdentifier = {}));
     /**
      * The TextDocumentItem namespace provides helper functions to work with
      * [TextDocumentItem](#TextDocumentItem) literals.
@@ -929,7 +1240,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.defined(candidate) && Is.string(candidate.uri) && Is.string(candidate.languageId) && Is.number(candidate.version) && Is.string(candidate.text);
+            return Is.defined(candidate) && Is.string(candidate.uri) && Is.string(candidate.languageId) && Is.integer(candidate.version) && Is.string(candidate.text);
         }
         TextDocumentItem.is = is;
     })(TextDocumentItem = exports.TextDocumentItem || (exports.TextDocumentItem = {}));
@@ -1021,7 +1332,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          * the end of the snippet. Placeholders with equal identifiers are linked,
          * that is typing in one will update others too.
          *
-         * See also: https://github.com/Microsoft/vscode/blob/master/src/vs/editor/contrib/snippet/common/snippet.md
+         * See also: https://microsoft.github.io/language-server-protocol/specifications/specification-current/#snippet_syntax
          */
         InsertTextFormat.Snippet = 2;
     })(InsertTextFormat = exports.InsertTextFormat || (exports.InsertTextFormat = {}));
@@ -1038,6 +1349,56 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         CompletionItemTag.Deprecated = 1;
     })(CompletionItemTag = exports.CompletionItemTag || (exports.CompletionItemTag = {}));
+    /**
+     * The InsertReplaceEdit namespace provides functions to deal with insert / replace edits.
+     *
+     * @since 3.16.0
+     */
+    var InsertReplaceEdit;
+    (function (InsertReplaceEdit) {
+        /**
+         * Creates a new insert / replace edit
+         */
+        function create(newText, insert, replace) {
+            return { newText: newText, insert: insert, replace: replace };
+        }
+        InsertReplaceEdit.create = create;
+        /**
+         * Checks whether the given literal conforms to the [InsertReplaceEdit](#InsertReplaceEdit) interface.
+         */
+        function is(value) {
+            var candidate = value;
+            return candidate && Is.string(candidate.newText) && Range.is(candidate.insert) && Range.is(candidate.replace);
+        }
+        InsertReplaceEdit.is = is;
+    })(InsertReplaceEdit = exports.InsertReplaceEdit || (exports.InsertReplaceEdit = {}));
+    /**
+     * How whitespace and indentation is handled during completion
+     * item insertion.
+     *
+     * @since 3.16.0
+     */
+    var InsertTextMode;
+    (function (InsertTextMode) {
+        /**
+         * The insertion or replace strings is taken as it is. If the
+         * value is multi line the lines below the cursor will be
+         * inserted using the indentation defined in the string value.
+         * The client will not apply any kind of adjustments to the
+         * string.
+         */
+        InsertTextMode.asIs = 1;
+        /**
+         * The editor adjusts leading whitespace of new lines so that
+         * they match the indentation up to the cursor of the line for
+         * which the item is accepted.
+         *
+         * Consider a line like this: <2tabs><cursor><3tabs>foo. Accepting a
+         * multi line completion item is indented using 2 tabs and all
+         * following lines inserted will be indented using 2 tabs as well.
+         */
+        InsertTextMode.adjustIndentation = 2;
+    })(InsertTextMode = exports.InsertTextMode || (exports.InsertTextMode = {}));
     /**
      * The CompletionItem namespace provides functions to deal with
      * completion items.
@@ -1099,7 +1460,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             var candidate = value;
             return !!candidate && Is.objectLiteral(candidate) && (MarkupContent.is(candidate.contents) ||
                 MarkedString.is(candidate.contents) ||
-                Is.typedArray(candidate.contents, MarkedString.is)) && (value.range === void 0 || Range.is(value.range));
+                Is.typedArray(candidate.contents, MarkedString.is)) && (value.range === undefined || Range.is(value.range));
         }
         Hover.is = is;
     })(Hover = exports.Hover || (exports.Hover = {}));
@@ -1216,7 +1577,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
     })(SymbolKind = exports.SymbolKind || (exports.SymbolKind = {}));
     /**
      * Symbol tags are extra annotations that tweak the rendering of a symbol.
-     * @since 3.15
+     * @since 3.16
      */
     var SymbolTag;
     (function (SymbolTag) {
@@ -1269,7 +1630,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
                 range: range,
                 selectionRange: selectionRange
             };
-            if (children !== void 0) {
+            if (children !== undefined) {
                 result.children = children;
             }
             return result;
@@ -1283,9 +1644,10 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             return candidate &&
                 Is.string(candidate.name) && Is.number(candidate.kind) &&
                 Range.is(candidate.range) && Range.is(candidate.selectionRange) &&
-                (candidate.detail === void 0 || Is.string(candidate.detail)) &&
-                (candidate.deprecated === void 0 || Is.boolean(candidate.deprecated)) &&
-                (candidate.children === void 0 || Array.isArray(candidate.children));
+                (candidate.detail === undefined || Is.string(candidate.detail)) &&
+                (candidate.deprecated === undefined || Is.boolean(candidate.deprecated)) &&
+                (candidate.children === undefined || Array.isArray(candidate.children)) &&
+                (candidate.tags === undefined || Array.isArray(candidate.tags));
         }
         DocumentSymbol.is = is;
     })(DocumentSymbol = exports.DocumentSymbol || (exports.DocumentSymbol = {}));
@@ -1373,7 +1735,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function create(diagnostics, only) {
             var result = { diagnostics: diagnostics };
-            if (only !== void 0 && only !== null) {
+            if (only !== undefined && only !== null) {
                 result.only = only;
             }
             return result;
@@ -1384,21 +1746,26 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.defined(candidate) && Is.typedArray(candidate.diagnostics, Diagnostic.is) && (candidate.only === void 0 || Is.typedArray(candidate.only, Is.string));
+            return Is.defined(candidate) && Is.typedArray(candidate.diagnostics, Diagnostic.is) && (candidate.only === undefined || Is.typedArray(candidate.only, Is.string));
         }
         CodeActionContext.is = is;
     })(CodeActionContext = exports.CodeActionContext || (exports.CodeActionContext = {}));
     var CodeAction;
     (function (CodeAction) {
-        function create(title, commandOrEdit, kind) {
+        function create(title, kindOrCommandOrEdit, kind) {
             var result = { title: title };
-            if (Command.is(commandOrEdit)) {
-                result.command = commandOrEdit;
+            var checkKind = true;
+            if (typeof kindOrCommandOrEdit === 'string') {
+                checkKind = false;
+                result.kind = kindOrCommandOrEdit;
+            }
+            else if (Command.is(kindOrCommandOrEdit)) {
+                result.command = kindOrCommandOrEdit;
             }
             else {
-                result.edit = commandOrEdit;
+                result.edit = kindOrCommandOrEdit;
             }
-            if (kind !== void 0) {
+            if (checkKind && kind !== undefined) {
                 result.kind = kind;
             }
             return result;
@@ -1407,12 +1774,12 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         function is(value) {
             var candidate = value;
             return candidate && Is.string(candidate.title) &&
-                (candidate.diagnostics === void 0 || Is.typedArray(candidate.diagnostics, Diagnostic.is)) &&
-                (candidate.kind === void 0 || Is.string(candidate.kind)) &&
-                (candidate.edit !== void 0 || candidate.command !== void 0) &&
-                (candidate.command === void 0 || Command.is(candidate.command)) &&
-                (candidate.isPreferred === void 0 || Is.boolean(candidate.isPreferred)) &&
-                (candidate.edit === void 0 || WorkspaceEdit.is(candidate.edit));
+                (candidate.diagnostics === undefined || Is.typedArray(candidate.diagnostics, Diagnostic.is)) &&
+                (candidate.kind === undefined || Is.string(candidate.kind)) &&
+                (candidate.edit !== undefined || candidate.command !== undefined) &&
+                (candidate.command === undefined || Command.is(candidate.command)) &&
+                (candidate.isPreferred === undefined || Is.boolean(candidate.isPreferred)) &&
+                (candidate.edit === undefined || WorkspaceEdit.is(candidate.edit));
         }
         CodeAction.is = is;
     })(CodeAction = exports.CodeAction || (exports.CodeAction = {}));
@@ -1460,7 +1827,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.defined(candidate) && Is.number(candidate.tabSize) && Is.boolean(candidate.insertSpaces);
+            return Is.defined(candidate) && Is.uinteger(candidate.tabSize) && Is.boolean(candidate.insertSpaces);
         }
         FormattingOptions.is = is;
     })(FormattingOptions = exports.FormattingOptions || (exports.FormattingOptions = {}));
@@ -1528,7 +1895,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
          */
         function is(value) {
             var candidate = value;
-            return Is.defined(candidate) && Is.string(candidate.uri) && (Is.undefined(candidate.languageId) || Is.string(candidate.languageId)) && Is.number(candidate.lineCount)
+            return Is.defined(candidate) && Is.string(candidate.uri) && (Is.undefined(candidate.languageId) || Is.string(candidate.languageId)) && Is.uinteger(candidate.lineCount)
                 && Is.func(candidate.getText) && Is.func(candidate.positionAt) && Is.func(candidate.offsetAt) ? true : false;
         }
         TextDocument.is = is;
@@ -1590,6 +1957,9 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             return data;
         }
     })(TextDocument = exports.TextDocument || (exports.TextDocument = {}));
+    /**
+     * @deprecated Use the text document from the new vscode-languageserver-textdocument package.
+     */
     var FullTextDocument = /** @class */ (function () {
         function FullTextDocument(uri, languageId, version, content) {
             this._uri = uri;
@@ -1602,21 +1972,21 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             get: function () {
                 return this._uri;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FullTextDocument.prototype, "languageId", {
             get: function () {
                 return this._languageId;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(FullTextDocument.prototype, "version", {
             get: function () {
                 return this._version;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         FullTextDocument.prototype.getText = function (range) {
@@ -1692,7 +2062,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             get: function () {
                 return this.getLineOffsets().length;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return FullTextDocument;
@@ -1720,6 +2090,18 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
             return toString.call(value) === '[object Number]';
         }
         Is.number = number;
+        function numberRange(value, min, max) {
+            return toString.call(value) === '[object Number]' && min <= value && value <= max;
+        }
+        Is.numberRange = numberRange;
+        function integer(value) {
+            return toString.call(value) === '[object Number]' && -2147483648 <= value && value <= 2147483647;
+        }
+        Is.integer = integer;
+        function uinteger(value) {
+            return toString.call(value) === '[object Number]' && 0 <= value && value <= 2147483647;
+        }
+        Is.uinteger = uinteger;
         function func(value) {
             return toString.call(value) === '[object Function]';
         }
@@ -1737,7 +2119,7 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         Is.typedArray = typedArray;
     })(Is || (Is = {}));
 });
-
+//# sourceMappingURL=main.js.map;
 define('vscode-languageserver-types', ['vscode-languageserver-types/main'], function (main) { return main; });
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define('xregexp/xregexp-all',[],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.XRegExp = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -6642,12 +7024,47 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                 _d);
             this._schemaCache = {};
             this._kustoJsSchema = KustoLanguageService.convertToKustoJsSchema(schema);
-            this._kustoJsSchemaV2 = this.convertToKustoJsSchemaV2(schema);
+            this.__kustoJsSchemaV2 = this.convertToKustoJsSchemaV2(schema);
             this._schema = schema;
+            this._clustersSetInGlobalState = new Set();
+            this._nonEmptyDatabaseSetInGlobalState = new Set(); // used to remove clusters that are already in the global state
             this.configure(languageSettings);
             this._newlineAppendPipePolicy = new Kusto.Data.IntelliSense.ApplyPolicy();
             this._newlineAppendPipePolicy.Text = '\n| ';
         }
+        KustoLanguageService.prototype.createDatabaseUniqueName = function (clusterName, databaseName) {
+            return clusterName + "_" + databaseName;
+        };
+        Object.defineProperty(KustoLanguageService.prototype, "_kustoJsSchemaV2", {
+            /**
+             * A getter for __kustoJsSchemaV2
+             */
+            get: function () {
+                return this.__kustoJsSchemaV2;
+            },
+            /**
+             * A setter for _kustoJsSchemaV2. After a schema (global state) is set, create 2 sets of cluster and database names.
+             */
+            set: function (globalState) {
+                this.__kustoJsSchemaV2 = globalState;
+                this._clustersSetInGlobalState.clear();
+                this._nonEmptyDatabaseSetInGlobalState.clear();
+                // create 2 Sets with cluster names and database names based on the updated Global State.
+                for (var i = 0; i < globalState.Clusters.Count; i++) {
+                    var clusterSymbol = this._kustoJsSchemaV2.Clusters.getItem(i);
+                    this._clustersSetInGlobalState.add(clusterSymbol.Name);
+                    for (var i2 = 0; i2 < clusterSymbol.Databases.Count; i2++) {
+                        var databaseSymbol = clusterSymbol.Databases.getItem(i2);
+                        if (databaseSymbol.Tables.Count > 0) {
+                            // only include database with tables
+                            this._nonEmptyDatabaseSetInGlobalState.add(this.createDatabaseUniqueName(clusterSymbol.Name, databaseSymbol.Name));
+                        }
+                    }
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         KustoLanguageService.prototype.configure = function (languageSettings) {
             this._languageSettings = languageSettings;
             // Since we're still reverting to V1 intellisense for control commands, we need to update the rules provider
@@ -6657,15 +7074,43 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
         KustoLanguageService.prototype.doComplete = function (document, position) {
             return this.isIntellisenseV2() ? this.doCompleteV2(document, position) : this.doCompleteV1(document, position);
         };
+        /**
+         * important: Only use during development to test Global State.
+         * Prints clusters, databases and tables that are currently in the GlobalState.
+         */
+        KustoLanguageService.prototype.debugGlobalState = function (globals) {
+            // iterate over clusters
+            console.log("globals.Clusters.Count: " + globals.Clusters.Count);
+            for (var i = 0; i < globals.Clusters.Count; i++) {
+                var cluster = globals.Clusters.getItem(i);
+                console.log("cluster: " + cluster.Name);
+                // iterate over databases
+                console.log("cluster.Databases.Count: " + cluster.Databases.Count);
+                for (var i2 = 0; i2 < cluster.Databases.Count; i2++) {
+                    var database = cluster.Databases.getItem(i2);
+                    console.log("cluster.database: [" + cluster.Name + "].[" + database.Name + "]");
+                    // iterate over tables
+                    console.log("cluster.Databases.Tables.Count: " + database.Tables.Count);
+                    for (var i3 = 0; i3 < database.Tables.Count; i3++) {
+                        var table = database.Tables.getItem(i3);
+                        console.log("cluster.database.table: [" + cluster.Name + "].[" + database.Name + "].[" + table.Name + "]");
+                    }
+                }
+            }
+        };
         KustoLanguageService.prototype.doCompleteV2 = function (document, position) {
             var _this = this;
             if (!document) {
                 return Promise.resolve(ls.CompletionList.create([]));
             }
             var script = this.parseDocumentV2(document);
+            // print cluster/database/tables from CodeScript.Globals
+            // this.debugGlobalState(script.Globals);
+            // get current command
             var cursorOffset = document.offsetAt(position);
-            var currentcommand = this.getCurrentCommandV2(script, cursorOffset);
-            var completionItems = currentcommand.Service.GetCompletionItems(cursorOffset);
+            var currentCommand = script.GetBlockAtPosition(cursorOffset);
+            // get completion items
+            var completionItems = currentCommand.Service.GetCompletionItems(cursorOffset);
             var disabledItems = this.disabledCompletionItemsV2;
             if (this._languageSettings.disabledCompletionItems) {
                 this._languageSettings.disabledCompletionItems.map(function (item) {
@@ -6702,6 +7147,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                 var endPosition = document.positionAt(completionItems.EditStart + completionItems.EditLength);
                 lsItem.textEdit = ls.TextEdit.replace(ls.Range.create(startPosition, endPosition), textToInsert);
                 lsItem.sortText = _this.getSortText(i + 1);
+                // lsItem.filterText = lsItem.sortText;
                 lsItem.kind = _this.kustoKindToLsKindV2(kItem.Kind);
                 lsItem.insertTextFormat = format;
                 lsItem.detail = helpTopic ? helpTopic.ShortDescription : undefined;
@@ -6831,6 +7277,62 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                     };
                 });
             });
+        };
+        KustoLanguageService.prototype.getClusterReferences = function (document, cursorOffset) {
+            var _a;
+            var script = this.parseDocumentV2(document);
+            var currentBlock = this.getCurrentCommandV2(script, cursorOffset);
+            var clusterReferences = (_a = currentBlock === null || currentBlock === void 0 ? void 0 : currentBlock.Service) === null || _a === void 0 ? void 0 : _a.GetClusterReferences();
+            if (!clusterReferences) {
+                return Promise.resolve([]);
+            }
+            var newClustersReferences = [];
+            var newClustersReferencesSet = new Set(); // used to remove duplicates
+            // Keep only unique clusters that aren't already exist in the Global State
+            for (var i = 0; i < clusterReferences.Count; i++) {
+                var clusterReference = clusterReferences.getItem(i);
+                var clusterHostName = Kusto.Language.KustoFacts.GetHostName(clusterReference.Cluster);
+                // ignore duplicates
+                if (newClustersReferencesSet.has(clusterHostName)) {
+                    continue;
+                }
+                newClustersReferencesSet.add(clusterHostName);
+                // ignore references that are already in the GlobalState.
+                if (!this._clustersSetInGlobalState.has(clusterHostName)) {
+                    newClustersReferences.push({ clusterName: clusterHostName });
+                }
+            }
+            return Promise.resolve(newClustersReferences);
+        };
+        KustoLanguageService.prototype.getDatabaseReferences = function (document, cursorOffset) {
+            var _a;
+            var script = this.parseDocumentV2(document);
+            var currentBlock = this.getCurrentCommandV2(script, cursorOffset);
+            var databasesReferences = (_a = currentBlock === null || currentBlock === void 0 ? void 0 : currentBlock.Service) === null || _a === void 0 ? void 0 : _a.GetDatabaseReferences();
+            if (!databasesReferences) {
+                return Promise.resolve([]);
+            }
+            var newDatabasesReferences = [];
+            var newDatabasesReferencesSet = new Set();
+            for (var i1 = 0; i1 < databasesReferences.Count; i1++) {
+                var databaseReference = databasesReferences.getItem(i1);
+                var clusterHostName = Kusto.Language.KustoFacts.GetHostName(databaseReference.Cluster);
+                // ignore duplicates
+                var databaseReferenceUniqueId = this.createDatabaseUniqueName(clusterHostName, databaseReference.Database);
+                if (newDatabasesReferencesSet.has(databaseReferenceUniqueId)) {
+                    continue;
+                }
+                newDatabasesReferencesSet.add(databaseReferenceUniqueId);
+                // ignore references that are already in the GlobalState.
+                var foundInGlobalState = this._nonEmptyDatabaseSetInGlobalState.has(databaseReferenceUniqueId);
+                if (!foundInGlobalState) {
+                    newDatabasesReferences.push({
+                        databaseName: databaseReference.Database,
+                        clusterName: databaseReference.Cluster,
+                    });
+                }
+            }
+            return Promise.resolve(newDatabasesReferences);
         };
         KustoLanguageService.prototype.doValidation = function (document, changeIntervals) {
             var _this = this;
@@ -6972,6 +7474,42 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                     : false;
             });
         };
+        KustoLanguageService.prototype.addClusterToSchema = function (document, clusterName, databaseNames) {
+            var clusterNameOnly = Kusto.Language.KustoFacts.GetHostName(clusterName);
+            var cluster = this._kustoJsSchemaV2.GetCluster$1(clusterNameOnly);
+            if (cluster) {
+                // add databases that are not already in the cluster.
+                databaseNames
+                    .filter(function (databaseName) { return !cluster.GetDatabase(databaseName); })
+                    .map(function (databaseName) {
+                    var symbol = new sym.DatabaseSymbol.$ctor1(databaseName, undefined, false);
+                    cluster = cluster.AddDatabase(symbol);
+                });
+            }
+            if (!cluster) {
+                var databaseSymbols = databaseNames.map(function (databaseName) {
+                    var symbol = new sym.DatabaseSymbol.$ctor1(databaseName, undefined, false);
+                    return symbol;
+                });
+                var databaseSymbolsList = KustoLanguageService.toBridgeList(databaseSymbols);
+                cluster = new sym.ClusterSymbol.$ctor1(clusterNameOnly, databaseSymbolsList, false);
+            }
+            this._kustoJsSchemaV2 = this._kustoJsSchemaV2.AddOrReplaceCluster(cluster);
+            this._script = k2.CodeScript.From$1(document.getText(), this._kustoJsSchemaV2);
+            return Promise.resolve();
+        };
+        KustoLanguageService.prototype.addDatabaseToSchema = function (document, clusterName, databaseSchema) {
+            var clusterHostName = Kusto.Language.KustoFacts.GetHostName(clusterName);
+            var cluster = this._kustoJsSchemaV2.GetCluster$1(clusterHostName);
+            if (!cluster) {
+                cluster = new sym.ClusterSymbol.$ctor1(clusterHostName, null, false);
+            }
+            var databaseSymbol = KustoLanguageService.convertToDatabaseSymbol(databaseSchema);
+            cluster = cluster.AddOrUpdateDatabase(databaseSymbol);
+            this._kustoJsSchemaV2 = this._kustoJsSchemaV2.AddOrReplaceCluster(cluster);
+            this._script = k2.CodeScript.From$1(document.getText(), this._kustoJsSchemaV2);
+            return Promise.resolve();
+        };
         KustoLanguageService.prototype.setSchema = function (schema) {
             var _this = this;
             this._schema = schema;
@@ -7020,29 +7558,39 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             var databases = Object.keys(schema.Databases)
                 .map(function (key) { return schema.Databases[key]; })
                 .map(function (_a) {
-                var Name = _a.Name, Tables = _a.Tables, Functions = _a.Functions, MinorVersion = _a.MinorVersion, MajorVersion = _a.MajorVersion;
+                var Name = _a.Name, Tables = _a.Tables, ExternalTables = _a.ExternalTables, MaterializedViews = _a.MaterializedViews, Functions = _a.Functions, MinorVersion = _a.MinorVersion, MajorVersion = _a.MajorVersion;
                 return ({
                     name: Name,
                     minorVersion: MinorVersion,
                     majorVersion: MajorVersion,
-                    tables: Object.keys(Tables)
-                        .map(function (key) { return Tables[key]; })
+                    tables: [].concat.apply([], [
+                        [Tables, 'Table'],
+                        [MaterializedViews, 'MaterializedView'],
+                        [ExternalTables, 'ExternalTable'],
+                    ]
+                        .filter(function (_a) {
+                        var tableContainer = _a[0];
+                        return tableContainer;
+                    })
                         .map(function (_a) {
-                        var Name = _a.Name, OrderedColumns = _a.OrderedColumns, DocString = _a.DocString, EntityType = _a.EntityType;
-                        return ({
-                            name: Name,
-                            docstring: DocString,
-                            entityType: EntityType,
-                            columns: OrderedColumns.map(function (_a) {
-                                var Name = _a.Name, Type = _a.Type, DocString = _a.DocString, CslType = _a.CslType;
-                                return ({
-                                    name: Name,
-                                    type: CslType,
-                                    docstring: DocString,
-                                });
-                            }),
+                        var tableContainer = _a[0], tableEntity = _a[1];
+                        return Object.values(tableContainer).map(function (_a) {
+                            var Name = _a.Name, OrderedColumns = _a.OrderedColumns, DocString = _a.DocString;
+                            return ({
+                                name: Name,
+                                docstring: DocString,
+                                entityType: tableEntity,
+                                columns: OrderedColumns.map(function (_a) {
+                                    var Name = _a.Name, Type = _a.Type, DocString = _a.DocString, CslType = _a.CslType;
+                                    return ({
+                                        name: Name,
+                                        type: CslType,
+                                        docstring: DocString,
+                                    });
+                                }),
+                            });
                         });
-                    }),
+                    })),
                     functions: Object.keys(Functions)
                         .map(function (key) { return Functions[key]; })
                         .map(function (_a) {
@@ -7696,7 +8244,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             var argumentType = new sym.TableSymbol.ctor(param.columns.map(function (col) { return KustoLanguageService.createColumnSymbol(col); }));
             return new sym.Parameter.$ctor2(param.name, argumentType);
         };
-        KustoLanguageService.convertToDatabaseSymbol = function (db, globalState, addFunctions) {
+        KustoLanguageService.convertToDatabaseSymbol = function (db) {
             var createFunctionSymbol = function (fn) {
                 var parameters = fn.inputParameters.map(function (param) {
                     return KustoLanguageService.createParameter(param);
@@ -7753,7 +8301,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                     cachedDb.database.majorVersion < db.majorVersion ||
                     (shouldIncludeFunctions && !cachedDb.includesFunctions)) {
                     // only add functions for the database in context (it's very time consuming)
-                    var databaseSymbol_1 = KustoLanguageService.convertToDatabaseSymbol(db, globalState, shouldIncludeFunctions);
+                    var databaseSymbol_1 = KustoLanguageService.convertToDatabaseSymbol(db);
                     cached[db.name] = { database: db, symbol: databaseSymbol_1, includesFunctions: shouldIncludeFunctions };
                 }
                 var databaseSymbol = cached[db.name].symbol;
@@ -8015,6 +8563,22 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.setSchema = function (schema) {
             return this._languageService.setSchema(schema);
         };
+        KustoWorker.prototype.addClusterToSchema = function (uri, clusterName, databasesNames) {
+            var document = this._getTextDocument(uri);
+            if (!document) {
+                console.error("addClusterToSchema: document is " + document + ". uri is " + uri);
+                return Promise.resolve();
+            }
+            return this._languageService.addClusterToSchema(document, clusterName, databasesNames);
+        };
+        KustoWorker.prototype.addDatabaseToSchema = function (uri, clusterName, databaseSchema) {
+            var document = this._getTextDocument(uri);
+            if (!document) {
+                console.error("addDatabaseToSchema: document is " + document + ". uri is " + uri);
+                return Promise.resolve();
+            }
+            return this._languageService.addDatabaseToSchema(document, clusterName, databaseSchema);
+        };
         KustoWorker.prototype.setSchemaFromShowSchema = function (schema, clusterConnectionString, databaseInContextName) {
             return this._languageService.setSchemaFromShowSchema(schema, clusterConnectionString, databaseInContextName);
         };
@@ -8197,6 +8761,20 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getResultTypes = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             return this._languageService.getResultTypes(document, cursorOffset);
+        };
+        KustoWorker.prototype.getClusterReferences = function (uri, cursorOffset) {
+            var document = this._getTextDocument(uri);
+            if (!document) {
+                return Promise.resolve(null);
+            }
+            return this._languageService.getClusterReferences(document, cursorOffset);
+        };
+        KustoWorker.prototype.getDatabaseReferences = function (uri, cursorOffset) {
+            var document = this._getTextDocument(uri);
+            if (!document) {
+                return Promise.resolve(null);
+            }
+            return this._languageService.getDatabaseReferences(document, cursorOffset);
         };
         KustoWorker.prototype._getTextDocument = function (uri) {
             var models = this._ctx.getMirrorModels();

@@ -250,12 +250,47 @@ var KustoLanguageService = /** @class */ (function () {
             _d);
         this._schemaCache = {};
         this._kustoJsSchema = KustoLanguageService.convertToKustoJsSchema(schema);
-        this._kustoJsSchemaV2 = this.convertToKustoJsSchemaV2(schema);
+        this.__kustoJsSchemaV2 = this.convertToKustoJsSchemaV2(schema);
         this._schema = schema;
+        this._clustersSetInGlobalState = new Set();
+        this._nonEmptyDatabaseSetInGlobalState = new Set(); // used to remove clusters that are already in the global state
         this.configure(languageSettings);
         this._newlineAppendPipePolicy = new Kusto.Data.IntelliSense.ApplyPolicy();
         this._newlineAppendPipePolicy.Text = '\n| ';
     }
+    KustoLanguageService.prototype.createDatabaseUniqueName = function (clusterName, databaseName) {
+        return clusterName + "_" + databaseName;
+    };
+    Object.defineProperty(KustoLanguageService.prototype, "_kustoJsSchemaV2", {
+        /**
+         * A getter for __kustoJsSchemaV2
+         */
+        get: function () {
+            return this.__kustoJsSchemaV2;
+        },
+        /**
+         * A setter for _kustoJsSchemaV2. After a schema (global state) is set, create 2 sets of cluster and database names.
+         */
+        set: function (globalState) {
+            this.__kustoJsSchemaV2 = globalState;
+            this._clustersSetInGlobalState.clear();
+            this._nonEmptyDatabaseSetInGlobalState.clear();
+            // create 2 Sets with cluster names and database names based on the updated Global State.
+            for (var i = 0; i < globalState.Clusters.Count; i++) {
+                var clusterSymbol = this._kustoJsSchemaV2.Clusters.getItem(i);
+                this._clustersSetInGlobalState.add(clusterSymbol.Name);
+                for (var i2 = 0; i2 < clusterSymbol.Databases.Count; i2++) {
+                    var databaseSymbol = clusterSymbol.Databases.getItem(i2);
+                    if (databaseSymbol.Tables.Count > 0) {
+                        // only include database with tables
+                        this._nonEmptyDatabaseSetInGlobalState.add(this.createDatabaseUniqueName(clusterSymbol.Name, databaseSymbol.Name));
+                    }
+                }
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     KustoLanguageService.prototype.configure = function (languageSettings) {
         this._languageSettings = languageSettings;
         // Since we're still reverting to V1 intellisense for control commands, we need to update the rules provider
@@ -265,15 +300,43 @@ var KustoLanguageService = /** @class */ (function () {
     KustoLanguageService.prototype.doComplete = function (document, position) {
         return this.isIntellisenseV2() ? this.doCompleteV2(document, position) : this.doCompleteV1(document, position);
     };
+    /**
+     * important: Only use during development to test Global State.
+     * Prints clusters, databases and tables that are currently in the GlobalState.
+     */
+    KustoLanguageService.prototype.debugGlobalState = function (globals) {
+        // iterate over clusters
+        console.log("globals.Clusters.Count: " + globals.Clusters.Count);
+        for (var i = 0; i < globals.Clusters.Count; i++) {
+            var cluster = globals.Clusters.getItem(i);
+            console.log("cluster: " + cluster.Name);
+            // iterate over databases
+            console.log("cluster.Databases.Count: " + cluster.Databases.Count);
+            for (var i2 = 0; i2 < cluster.Databases.Count; i2++) {
+                var database = cluster.Databases.getItem(i2);
+                console.log("cluster.database: [" + cluster.Name + "].[" + database.Name + "]");
+                // iterate over tables
+                console.log("cluster.Databases.Tables.Count: " + database.Tables.Count);
+                for (var i3 = 0; i3 < database.Tables.Count; i3++) {
+                    var table = database.Tables.getItem(i3);
+                    console.log("cluster.database.table: [" + cluster.Name + "].[" + database.Name + "].[" + table.Name + "]");
+                }
+            }
+        }
+    };
     KustoLanguageService.prototype.doCompleteV2 = function (document, position) {
         var _this = this;
         if (!document) {
             return Promise.resolve(ls.CompletionList.create([]));
         }
         var script = this.parseDocumentV2(document);
+        // print cluster/database/tables from CodeScript.Globals
+        // this.debugGlobalState(script.Globals);
+        // get current command
         var cursorOffset = document.offsetAt(position);
-        var currentcommand = this.getCurrentCommandV2(script, cursorOffset);
-        var completionItems = currentcommand.Service.GetCompletionItems(cursorOffset);
+        var currentCommand = script.GetBlockAtPosition(cursorOffset);
+        // get completion items
+        var completionItems = currentCommand.Service.GetCompletionItems(cursorOffset);
         var disabledItems = this.disabledCompletionItemsV2;
         if (this._languageSettings.disabledCompletionItems) {
             this._languageSettings.disabledCompletionItems.map(function (item) {
@@ -310,6 +373,7 @@ var KustoLanguageService = /** @class */ (function () {
             var endPosition = document.positionAt(completionItems.EditStart + completionItems.EditLength);
             lsItem.textEdit = ls.TextEdit.replace(ls.Range.create(startPosition, endPosition), textToInsert);
             lsItem.sortText = _this.getSortText(i + 1);
+            // lsItem.filterText = lsItem.sortText;
             lsItem.kind = _this.kustoKindToLsKindV2(kItem.Kind);
             lsItem.insertTextFormat = format;
             lsItem.detail = helpTopic ? helpTopic.ShortDescription : undefined;
@@ -439,6 +503,62 @@ var KustoLanguageService = /** @class */ (function () {
                 };
             });
         });
+    };
+    KustoLanguageService.prototype.getClusterReferences = function (document, cursorOffset) {
+        var _a;
+        var script = this.parseDocumentV2(document);
+        var currentBlock = this.getCurrentCommandV2(script, cursorOffset);
+        var clusterReferences = (_a = currentBlock === null || currentBlock === void 0 ? void 0 : currentBlock.Service) === null || _a === void 0 ? void 0 : _a.GetClusterReferences();
+        if (!clusterReferences) {
+            return Promise.resolve([]);
+        }
+        var newClustersReferences = [];
+        var newClustersReferencesSet = new Set(); // used to remove duplicates
+        // Keep only unique clusters that aren't already exist in the Global State
+        for (var i = 0; i < clusterReferences.Count; i++) {
+            var clusterReference = clusterReferences.getItem(i);
+            var clusterHostName = Kusto.Language.KustoFacts.GetHostName(clusterReference.Cluster);
+            // ignore duplicates
+            if (newClustersReferencesSet.has(clusterHostName)) {
+                continue;
+            }
+            newClustersReferencesSet.add(clusterHostName);
+            // ignore references that are already in the GlobalState.
+            if (!this._clustersSetInGlobalState.has(clusterHostName)) {
+                newClustersReferences.push({ clusterName: clusterHostName });
+            }
+        }
+        return Promise.resolve(newClustersReferences);
+    };
+    KustoLanguageService.prototype.getDatabaseReferences = function (document, cursorOffset) {
+        var _a;
+        var script = this.parseDocumentV2(document);
+        var currentBlock = this.getCurrentCommandV2(script, cursorOffset);
+        var databasesReferences = (_a = currentBlock === null || currentBlock === void 0 ? void 0 : currentBlock.Service) === null || _a === void 0 ? void 0 : _a.GetDatabaseReferences();
+        if (!databasesReferences) {
+            return Promise.resolve([]);
+        }
+        var newDatabasesReferences = [];
+        var newDatabasesReferencesSet = new Set();
+        for (var i1 = 0; i1 < databasesReferences.Count; i1++) {
+            var databaseReference = databasesReferences.getItem(i1);
+            var clusterHostName = Kusto.Language.KustoFacts.GetHostName(databaseReference.Cluster);
+            // ignore duplicates
+            var databaseReferenceUniqueId = this.createDatabaseUniqueName(clusterHostName, databaseReference.Database);
+            if (newDatabasesReferencesSet.has(databaseReferenceUniqueId)) {
+                continue;
+            }
+            newDatabasesReferencesSet.add(databaseReferenceUniqueId);
+            // ignore references that are already in the GlobalState.
+            var foundInGlobalState = this._nonEmptyDatabaseSetInGlobalState.has(databaseReferenceUniqueId);
+            if (!foundInGlobalState) {
+                newDatabasesReferences.push({
+                    databaseName: databaseReference.Database,
+                    clusterName: databaseReference.Cluster,
+                });
+            }
+        }
+        return Promise.resolve(newDatabasesReferences);
     };
     KustoLanguageService.prototype.doValidation = function (document, changeIntervals) {
         var _this = this;
@@ -580,6 +700,42 @@ var KustoLanguageService = /** @class */ (function () {
                 : false;
         });
     };
+    KustoLanguageService.prototype.addClusterToSchema = function (document, clusterName, databaseNames) {
+        var clusterNameOnly = Kusto.Language.KustoFacts.GetHostName(clusterName);
+        var cluster = this._kustoJsSchemaV2.GetCluster$1(clusterNameOnly);
+        if (cluster) {
+            // add databases that are not already in the cluster.
+            databaseNames
+                .filter(function (databaseName) { return !cluster.GetDatabase(databaseName); })
+                .map(function (databaseName) {
+                var symbol = new sym.DatabaseSymbol.$ctor1(databaseName, undefined, false);
+                cluster = cluster.AddDatabase(symbol);
+            });
+        }
+        if (!cluster) {
+            var databaseSymbols = databaseNames.map(function (databaseName) {
+                var symbol = new sym.DatabaseSymbol.$ctor1(databaseName, undefined, false);
+                return symbol;
+            });
+            var databaseSymbolsList = KustoLanguageService.toBridgeList(databaseSymbols);
+            cluster = new sym.ClusterSymbol.$ctor1(clusterNameOnly, databaseSymbolsList, false);
+        }
+        this._kustoJsSchemaV2 = this._kustoJsSchemaV2.AddOrReplaceCluster(cluster);
+        this._script = k2.CodeScript.From$1(document.getText(), this._kustoJsSchemaV2);
+        return Promise.resolve();
+    };
+    KustoLanguageService.prototype.addDatabaseToSchema = function (document, clusterName, databaseSchema) {
+        var clusterHostName = Kusto.Language.KustoFacts.GetHostName(clusterName);
+        var cluster = this._kustoJsSchemaV2.GetCluster$1(clusterHostName);
+        if (!cluster) {
+            cluster = new sym.ClusterSymbol.$ctor1(clusterHostName, null, false);
+        }
+        var databaseSymbol = KustoLanguageService.convertToDatabaseSymbol(databaseSchema);
+        cluster = cluster.AddOrUpdateDatabase(databaseSymbol);
+        this._kustoJsSchemaV2 = this._kustoJsSchemaV2.AddOrReplaceCluster(cluster);
+        this._script = k2.CodeScript.From$1(document.getText(), this._kustoJsSchemaV2);
+        return Promise.resolve();
+    };
     KustoLanguageService.prototype.setSchema = function (schema) {
         var _this = this;
         this._schema = schema;
@@ -628,29 +784,39 @@ var KustoLanguageService = /** @class */ (function () {
         var databases = Object.keys(schema.Databases)
             .map(function (key) { return schema.Databases[key]; })
             .map(function (_a) {
-            var Name = _a.Name, Tables = _a.Tables, Functions = _a.Functions, MinorVersion = _a.MinorVersion, MajorVersion = _a.MajorVersion;
+            var Name = _a.Name, Tables = _a.Tables, ExternalTables = _a.ExternalTables, MaterializedViews = _a.MaterializedViews, Functions = _a.Functions, MinorVersion = _a.MinorVersion, MajorVersion = _a.MajorVersion;
             return ({
                 name: Name,
                 minorVersion: MinorVersion,
                 majorVersion: MajorVersion,
-                tables: Object.keys(Tables)
-                    .map(function (key) { return Tables[key]; })
+                tables: [].concat.apply([], [
+                    [Tables, 'Table'],
+                    [MaterializedViews, 'MaterializedView'],
+                    [ExternalTables, 'ExternalTable'],
+                ]
+                    .filter(function (_a) {
+                    var tableContainer = _a[0];
+                    return tableContainer;
+                })
                     .map(function (_a) {
-                    var Name = _a.Name, OrderedColumns = _a.OrderedColumns, DocString = _a.DocString, EntityType = _a.EntityType;
-                    return ({
-                        name: Name,
-                        docstring: DocString,
-                        entityType: EntityType,
-                        columns: OrderedColumns.map(function (_a) {
-                            var Name = _a.Name, Type = _a.Type, DocString = _a.DocString, CslType = _a.CslType;
-                            return ({
-                                name: Name,
-                                type: CslType,
-                                docstring: DocString,
-                            });
-                        }),
+                    var tableContainer = _a[0], tableEntity = _a[1];
+                    return Object.values(tableContainer).map(function (_a) {
+                        var Name = _a.Name, OrderedColumns = _a.OrderedColumns, DocString = _a.DocString;
+                        return ({
+                            name: Name,
+                            docstring: DocString,
+                            entityType: tableEntity,
+                            columns: OrderedColumns.map(function (_a) {
+                                var Name = _a.Name, Type = _a.Type, DocString = _a.DocString, CslType = _a.CslType;
+                                return ({
+                                    name: Name,
+                                    type: CslType,
+                                    docstring: DocString,
+                                });
+                            }),
+                        });
                     });
-                }),
+                })),
                 functions: Object.keys(Functions)
                     .map(function (key) { return Functions[key]; })
                     .map(function (_a) {
@@ -1304,7 +1470,7 @@ var KustoLanguageService = /** @class */ (function () {
         var argumentType = new sym.TableSymbol.ctor(param.columns.map(function (col) { return KustoLanguageService.createColumnSymbol(col); }));
         return new sym.Parameter.$ctor2(param.name, argumentType);
     };
-    KustoLanguageService.convertToDatabaseSymbol = function (db, globalState, addFunctions) {
+    KustoLanguageService.convertToDatabaseSymbol = function (db) {
         var createFunctionSymbol = function (fn) {
             var parameters = fn.inputParameters.map(function (param) {
                 return KustoLanguageService.createParameter(param);
@@ -1361,7 +1527,7 @@ var KustoLanguageService = /** @class */ (function () {
                 cachedDb.database.majorVersion < db.majorVersion ||
                 (shouldIncludeFunctions && !cachedDb.includesFunctions)) {
                 // only add functions for the database in context (it's very time consuming)
-                var databaseSymbol_1 = KustoLanguageService.convertToDatabaseSymbol(db, globalState, shouldIncludeFunctions);
+                var databaseSymbol_1 = KustoLanguageService.convertToDatabaseSymbol(db);
                 cached[db.name] = { database: db, symbol: databaseSymbol_1, includesFunctions: shouldIncludeFunctions };
             }
             var databaseSymbol = cached[db.name].symbol;
