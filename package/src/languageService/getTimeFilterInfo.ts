@@ -182,7 +182,9 @@ export function GetResultTypes(e: syntax.SyntaxNode) {
   TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameDeclaration).forEach((node) => {
     const namedNode = (node as Kusto.Language.Syntax.NameDeclaration);
     
-    mapNodeResultTypes[namedNode.Name.SimpleName] = namedNode.ResultType.Name;
+    if (namedNode?.Name?.SimpleName) {
+      mapNodeResultTypes[namedNode.Name.SimpleName] = namedNode?.ResultType?.Name;
+    }
   });
 
   return mapNodeResultTypes;
