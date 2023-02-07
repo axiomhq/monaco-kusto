@@ -121,8 +121,11 @@ define('vs/language/kusto/languageService/getTimeFilterInfo',["require", "export
     function GetResultTypes(e) {
         var mapNodeResultTypes = {};
         TokensUtilities.getSyntaxNodes(e, Kusto.Language.Syntax.NameDeclaration).forEach(function (node) {
+            var _a, _b;
             var namedNode = node;
-            mapNodeResultTypes[namedNode.Name.SimpleName] = namedNode.ResultType.Name;
+            if ((_a = namedNode === null || namedNode === void 0 ? void 0 : namedNode.Name) === null || _a === void 0 ? void 0 : _a.SimpleName) {
+                mapNodeResultTypes[namedNode.Name.SimpleName] = (_b = namedNode === null || namedNode === void 0 ? void 0 : namedNode.ResultType) === null || _b === void 0 ? void 0 : _b.Name;
+            }
         });
         return mapNodeResultTypes;
     }
