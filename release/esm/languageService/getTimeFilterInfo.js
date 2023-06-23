@@ -36,8 +36,7 @@ var SymbolsUtilities = /** @class */ (function () {
         return e instanceof Kusto.Language.Symbols.ColumnSymbol;
     };
     SymbolsUtilities.isDatetimeType = function (e) {
-        return (e == Kusto.Language.Symbols.ScalarTypes.DateTime ||
-            e == Kusto.Language.Symbols.ScalarTypes.TimeSpan);
+        return (e == Kusto.Language.Symbols.ScalarTypes.DateTime);
     };
     return SymbolsUtilities;
 }());

@@ -43,8 +43,7 @@ class SymbolsUtilities {
     }
     static isDatetimeType(e) {
         return (
-            e == Kusto.Language.Symbols.ScalarTypes.DateTime ||
-            e == Kusto.Language.Symbols.ScalarTypes.TimeSpan
+            e == Kusto.Language.Symbols.ScalarTypes.DateTime
         );
     }
 }
