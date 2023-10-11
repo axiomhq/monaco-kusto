@@ -3,7 +3,6 @@ import IEvent = monaco.IEvent;
 import IDisposable = monaco.IDisposable;
 
 import * as mode from './kustoMode';
-import KustoCommandHighlighter from './commandHighlighter';
 import KustoCommandFormatter from './commandFormatter';
 import { extend } from './extendedEditor';
 
@@ -101,7 +100,6 @@ export function setupMonacoKusto(monacoInstance: typeof monaco) {
     });
     // TODO: asked if there's a cleaner way to register an editor contribution. looks like monaco has an internal contribution regstrar but it's no exposed in the API.
     // https://stackoverflow.com/questions/46700245/how-to-add-an-ieditorcontribution-to-monaco-editor
-    let commandHighlighter: KustoCommandHighlighter;
     let commandFormatter: KustoCommandFormatter;
     monacoInstance.editor.defineTheme('kusto-light', {
         base: 'vs',
@@ -170,8 +168,6 @@ export function setupMonacoKusto(monacoInstance: typeof monaco) {
     monacoInstance.editor.onDidCreateEditor((editor) => {
         // hook up extension methods to editor.
         extend(editor);
-
-        commandHighlighter = new KustoCommandHighlighter(editor);
 
         if (isStandaloneCodeEditor(editor)) {
             commandFormatter = new KustoCommandFormatter(editor);
