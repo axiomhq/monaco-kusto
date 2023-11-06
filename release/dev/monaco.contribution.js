@@ -1,3 +1,59 @@
+define('vs/language/kusto/commandHighlighter',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * Highlights the command that surround cursor location
+     */
+    var KustoCommandHighlighter = /** @class */ (function () {
+        /**
+         * Register to cursor movement and seleciton events.
+         * @param editor monaco editor instance
+         */
+        function KustoCommandHighlighter(editor) {
+            var _this = this;
+            this.editor = editor;
+            this.disposables = [];
+            this.decorations = [];
+            // Note that selection update is triggered not only for selection changes, but also just when no text selection is occuring and cursor just moves around.
+            // This case is counted as a 0-length selection starting and ending on the cursor position.
+            this.editor.onDidChangeCursorSelection(function (changeEvent) {
+                if (_this.editor.getModel().getLanguageId() !== 'kusto') {
+                    return;
+                }
+                _this.highlightCommandUnderCursor(changeEvent);
+            });
+        }
+        KustoCommandHighlighter.prototype.getId = function () {
+            return KustoCommandHighlighter.ID;
+        };
+        KustoCommandHighlighter.prototype.dispose = function () {
+            this.disposables.forEach(function (d) { return d.dispose(); });
+        };
+        KustoCommandHighlighter.prototype.highlightCommandUnderCursor = function (changeEvent) {
+            // Looks like the user selected a bunch of text. we don't want to highlight the entire command in this case - since highlighting
+            // the text is more helpful.
+            if (!changeEvent.selection.isEmpty()) {
+                this.decorations = this.editor.deltaDecorations(this.decorations, []);
+                return;
+            }
+            var commandRange = this.editor.getCurrentCommandRange(changeEvent.selection.getStartPosition());
+            var decorations = [
+                {
+                    range: commandRange,
+                    options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT,
+                },
+            ];
+            this.decorations = this.editor.deltaDecorations(this.decorations, decorations);
+        };
+        KustoCommandHighlighter.ID = 'editor.contrib.kustoCommandHighliter';
+        KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = {
+            className: 'selectionHighlight',
+        };
+        return KustoCommandHighlighter;
+    }());
+    exports.default = KustoCommandHighlighter;
+});
+
 define('vs/language/kusto/commandFormatter',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -84,7 +140,7 @@ define('vs/language/kusto/extendedEditor',["require", "exports"], function (requ
     exports.extend = extend;
 });
 
-define('vs/language/kusto/monaco.contribution',["require", "exports", "./commandFormatter", "./extendedEditor"], function (require, exports, commandFormatter_1, extendedEditor_1) {
+define('vs/language/kusto/monaco.contribution',["require", "exports", "./commandHighlighter", "./commandFormatter", "./extendedEditor"], function (require, exports, commandHighlighter_1, commandFormatter_1, extendedEditor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.setupMonacoKusto = exports.LanguageServiceDefaultsImpl = void 0;
@@ -175,6 +231,7 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
         });
         // TODO: asked if there's a cleaner way to register an editor contribution. looks like monaco has an internal contribution regstrar but it's no exposed in the API.
         // https://stackoverflow.com/questions/46700245/how-to-add-an-ieditorcontribution-to-monaco-editor
+        var commandHighlighter;
         var commandFormatter;
         monacoInstance.editor.defineTheme('kusto-light', {
             base: 'vs',
@@ -241,6 +298,7 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
         monacoInstance.editor.onDidCreateEditor(function (editor) {
             // hook up extension methods to editor.
             extendedEditor_1.extend(editor);
+            commandHighlighter = new commandHighlighter_1.default(editor);
             if (isStandaloneCodeEditor(editor)) {
                 commandFormatter = new commandFormatter_1.default(editor);
             }
