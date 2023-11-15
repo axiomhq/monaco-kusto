@@ -259,7 +259,7 @@ var KustoLanguageService = /** @class */ (function () {
         this._newlineAppendPipePolicy.Text = '\n| ';
     }
     KustoLanguageService.prototype.createDatabaseUniqueName = function (clusterName, databaseName) {
-        return clusterName + "_" + databaseName;
+        return "".concat(clusterName, "_").concat(databaseName);
     };
     Object.defineProperty(KustoLanguageService.prototype, "_kustoJsSchemaV2", {
         /**
@@ -306,20 +306,20 @@ var KustoLanguageService = /** @class */ (function () {
      */
     KustoLanguageService.prototype.debugGlobalState = function (globals) {
         // iterate over clusters
-        console.log("globals.Clusters.Count: " + globals.Clusters.Count);
+        console.log("globals.Clusters.Count: ".concat(globals.Clusters.Count));
         for (var i = 0; i < globals.Clusters.Count; i++) {
             var cluster = globals.Clusters.getItem(i);
-            console.log("cluster: " + cluster.Name);
+            console.log("cluster: ".concat(cluster.Name));
             // iterate over databases
-            console.log("cluster.Databases.Count: " + cluster.Databases.Count);
+            console.log("cluster.Databases.Count: ".concat(cluster.Databases.Count));
             for (var i2 = 0; i2 < cluster.Databases.Count; i2++) {
                 var database = cluster.Databases.getItem(i2);
-                console.log("cluster.database: [" + cluster.Name + "].[" + database.Name + "]");
+                console.log("cluster.database: [".concat(cluster.Name, "].[").concat(database.Name, "]"));
                 // iterate over tables
-                console.log("cluster.Databases.Tables.Count: " + database.Tables.Count);
+                console.log("cluster.Databases.Tables.Count: ".concat(database.Tables.Count));
                 for (var i3 = 0; i3 < database.Tables.Count; i3++) {
                     var table = database.Tables.getItem(i3);
-                    console.log("cluster.database.table: [" + cluster.Name + "].[" + database.Name + "].[" + table.Name + "]");
+                    console.log("cluster.database.table: [".concat(cluster.Name, "].[").concat(database.Name, "].[").concat(table.Name, "]"));
                 }
             }
         }
@@ -1419,8 +1419,8 @@ var KustoLanguageService = /** @class */ (function () {
      * @param params scalar parameters
      */
     KustoLanguageService.scalarParametersToSignature = function (params) {
-        var signatureWithoutParens = params.map(function (param) { return param.name + ": " + param.cslType; }).join(', ');
-        return "(" + signatureWithoutParens + ")";
+        var signatureWithoutParens = params.map(function (param) { return "".concat(param.name, ": ").concat(param.cslType); }).join(', ');
+        return "(".concat(signatureWithoutParens, ")");
     };
     /**
      * Returns something like '(x: string, T: (y: int))'
@@ -1432,14 +1432,14 @@ var KustoLanguageService = /** @class */ (function () {
             .map(function (param) {
             if (param.columns) {
                 var tableSignature = _this.scalarParametersToSignature(param.columns);
-                return param.name + ": " + tableSignature;
+                return "".concat(param.name, ": ").concat(tableSignature);
             }
             else {
-                return param.name + ": " + param.cslType;
+                return "".concat(param.name, ": ").concat(param.cslType);
             }
         })
             .join(', ');
-        return "(" + signatureWithoutParens + ")";
+        return "(".concat(signatureWithoutParens, ")");
     };
     /**
      * converts a function definition to a let statement.
@@ -1447,7 +1447,7 @@ var KustoLanguageService = /** @class */ (function () {
      */
     KustoLanguageService.toLetStatement = function (fn) {
         var signature = this.inputParameterToSignature(fn.inputParameters);
-        return "let " + fn.name + " = " + signature + " " + fn.body;
+        return "let ".concat(fn.name, " = ").concat(signature, " ").concat(fn.body);
     };
     KustoLanguageService.createColumnSymbol = function (col) {
         return new sym.ColumnSymbol(col.name, sym.ScalarTypes.GetSymbol(getCslTypeNameFromClrType(col.type)), col.docstring);
@@ -1587,7 +1587,7 @@ var KustoLanguageService = /** @class */ (function () {
      */
     KustoLanguageService.prototype.getSortText = function (order) {
         if (order <= 0) {
-            throw new RangeError("order should be a number >= 1. instead got " + order);
+            throw new RangeError("order should be a number >= 1. instead got ".concat(order));
         }
         var sortText = '';
         var numCharacters = 26; // "z" - "a" + 1;

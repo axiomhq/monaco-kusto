@@ -13,7 +13,6 @@ define('vs/language/kusto/commandHighlighter',["require", "exports"], function (
             var _this = this;
             this.editor = editor;
             this.disposables = [];
-            this.decorations = [];
             // Note that selection update is triggered not only for selection changes, but also just when no text selection is occuring and cursor just moves around.
             // This case is counted as a 0-length selection starting and ending on the cursor position.
             this.editor.onDidChangeCursorSelection(function (changeEvent) {
@@ -33,7 +32,8 @@ define('vs/language/kusto/commandHighlighter',["require", "exports"], function (
             // Looks like the user selected a bunch of text. we don't want to highlight the entire command in this case - since highlighting
             // the text is more helpful.
             if (!changeEvent.selection.isEmpty()) {
-                this.decorations = this.editor.deltaDecorations(this.decorations, []);
+                this.decorations = this.editor.createDecorationsCollection([]);
+                // this.decorations = this.editor.deltaDecorations(this.decorations, []);
                 return;
             }
             var commandRange = this.editor.getCurrentCommandRange(changeEvent.selection.getStartPosition());
@@ -43,7 +43,7 @@ define('vs/language/kusto/commandHighlighter',["require", "exports"], function (
                     options: KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT,
                 },
             ];
-            this.decorations = this.editor.deltaDecorations(this.decorations, decorations);
+            this.decorations = this.editor.createDecorationsCollection(decorations);
         };
         KustoCommandHighlighter.ID = 'editor.contrib.kustoCommandHighliter';
         KustoCommandHighlighter.CURRENT_COMMAND_HIGHLIGHT = {
@@ -297,7 +297,7 @@ define('vs/language/kusto/monaco.contribution',["require", "exports", "./command
         // Most other language features are initialized in kustoMode.ts
         monacoInstance.editor.onDidCreateEditor(function (editor) {
             // hook up extension methods to editor.
-            extendedEditor_1.extend(editor);
+            (0, extendedEditor_1.extend)(editor);
             commandHighlighter = new commandHighlighter_1.default(editor);
             if (isStandaloneCodeEditor(editor)) {
                 commandFormatter = new commandFormatter_1.default(editor);

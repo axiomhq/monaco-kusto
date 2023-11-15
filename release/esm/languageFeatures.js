@@ -102,9 +102,9 @@ var DiagnosticsAdapter = /** @class */ (function () {
                 }
                 else {
                     // Add custom popup for syntax error: icon, header and message as markdown
-                    var header = syntaxErrorAsMarkDown.header ? "**" + syntaxErrorAsMarkDown.header + "** \n\n" : '';
-                    var icon = syntaxErrorAsMarkDown.icon ? "![](" + syntaxErrorAsMarkDown.icon + ")" : '';
-                    var popupErrorHoverHeaderMessage_1 = icon + " " + header;
+                    var header = syntaxErrorAsMarkDown.header ? "**".concat(syntaxErrorAsMarkDown.header, "** \n\n") : '';
+                    var icon = syntaxErrorAsMarkDown.icon ? "![](".concat(syntaxErrorAsMarkDown.icon, ")") : '';
+                    var popupErrorHoverHeaderMessage_1 = "".concat(icon, " ").concat(header);
                     var newDecorations = markers.map(function (marker) {
                         return {
                             range: {
@@ -439,7 +439,7 @@ function getCssForClassification() {
     var classificationColorTriplets = getClassificationColorTriplets();
     var cssInnerHtml = classificationColorTriplets
         .map(function (pair) {
-        return ".vs ." + pair.classification + " {color: #" + pair.colorLight + ";} .vs-dark ." + pair.classification + " {color: #" + pair.colorDark + ";}";
+        return ".vs .".concat(pair.classification, " {color: #").concat(pair.colorLight, ";} .vs-dark .").concat(pair.classification, " {color: #").concat(pair.colorDark, ";}");
     })
         .join('\n');
     return cssInnerHtml;
@@ -685,10 +685,11 @@ function toWorkspaceEdit(edit) {
             var e = _a[_i];
             resourceEdits.push({
                 resource: _uri,
-                edit: {
+                textEdit: {
                     range: toRange(e.range),
                     text: e.newText,
                 },
+                versionId: undefined,
             });
         }
     }

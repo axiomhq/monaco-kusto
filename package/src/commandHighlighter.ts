@@ -8,7 +8,7 @@ export default class KustoCommandHighlighter implements monaco.editor.IEditorCon
     };
 
     private disposables: monaco.IDisposable[] = [];
-    private decorations: string[] = [];
+    private decorations: monaco.editor.IEditorDecorationsCollection;
 
     /**
      * Register to cursor movement and seleciton events.
@@ -37,7 +37,8 @@ export default class KustoCommandHighlighter implements monaco.editor.IEditorCon
         // Looks like the user selected a bunch of text. we don't want to highlight the entire command in this case - since highlighting
         // the text is more helpful.
         if (!changeEvent.selection.isEmpty()) {
-            this.decorations = this.editor.deltaDecorations(this.decorations, []);
+            this.decorations = this.editor.createDecorationsCollection([]);
+            // this.decorations = this.editor.deltaDecorations(this.decorations, []);
             return;
         }
 
@@ -49,6 +50,6 @@ export default class KustoCommandHighlighter implements monaco.editor.IEditorCon
             },
         ];
 
-        this.decorations = this.editor.deltaDecorations(this.decorations, decorations);
+        this.decorations = this.editor.createDecorationsCollection(decorations);
     }
 }

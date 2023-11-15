@@ -14,7 +14,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.addClusterToSchema = function (uri, clusterName, databasesNames) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("addClusterToSchema: document is " + document + ". uri is " + uri);
+            console.error("addClusterToSchema: document is ".concat(document, ". uri is ").concat(uri));
             return Promise.resolve();
         }
         return this._languageService.addClusterToSchema(document, clusterName, databasesNames);
@@ -22,7 +22,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.addDatabaseToSchema = function (uri, clusterName, databaseSchema) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("addDatabaseToSchema: document is " + document + ". uri is " + uri);
+            console.error("addDatabaseToSchema: document is ".concat(document, ". uri is ").concat(uri));
             return Promise.resolve();
         }
         return this._languageService.addDatabaseToSchema(document, clusterName, databaseSchema);
@@ -39,7 +39,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getCommandInContext = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getCommandInContext: document is " + document + ". uri is " + uri);
+            console.error("getCommandInContext: document is ".concat(document, ". uri is ").concat(uri));
             return null;
         }
         var commandInContext = this._languageService.getCommandInContext(document, cursorOffset);
@@ -51,7 +51,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getQueryParams = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getQueryParams: document is " + document + ". uri is " + uri);
+            console.error("getQueryParams: document is ".concat(document, ". uri is ").concat(uri));
             return null;
         }
         var queryParams = this._languageService.getQueryParams(document, cursorOffset);
@@ -63,7 +63,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getGlobalParams = function (uri) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getGLobalParams: document is " + document + ". uri is " + uri);
+            console.error("getGLobalParams: document is ".concat(document, ". uri is ").concat(uri));
             return null;
         }
         var globalParams = this._languageService.getGlobalParams(document);
@@ -75,7 +75,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getReferencedGlobalParams = function (uri, cursorOffest) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getReferencedGlobalParams: document is " + document + ". uri is " + uri);
+            console.error("getReferencedGlobalParams: document is ".concat(document, ". uri is ").concat(uri));
             return null;
         }
         var referencedParams = this._languageService.getReferencedGlobalParams(document, cursorOffest);
@@ -87,7 +87,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getRenderInfo = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getRenderInfo: document is " + document + ". uri is " + uri);
+            console.error("getRenderInfo: document is ".concat(document, ". uri is ").concat(uri));
         }
         return this._languageService.getRenderInfo(document, cursorOffset).then(function (result) {
             if (!result) {
@@ -105,7 +105,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getCommandAndLocationInContext = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getCommandAndLocationInContext: document is " + document + ". uri is " + uri);
+            console.error("getCommandAndLocationInContext: document is ".concat(document, ". uri is ").concat(uri));
             return Promise.resolve(null);
         }
         return this._languageService.getCommandAndLocationInContext(document, cursorOffset).then(function (result) {
@@ -124,7 +124,7 @@ var KustoWorker = /** @class */ (function () {
     KustoWorker.prototype.getCommandsInDocument = function (uri) {
         var document = this._getTextDocument(uri);
         if (!document) {
-            console.error("getCommandInDocument: document is " + document + ". uri is " + uri);
+            console.error("getCommandInDocument: document is ".concat(document, ". uri is ").concat(uri));
             return null;
         }
         return this._languageService.getCommandsInDocument(document);

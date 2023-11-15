@@ -158,7 +158,8 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         'System.Object': 'dynamic',
         'System.Data.SqlTypes.SqlDecimal': 'decimal'
     };
-    exports.getCslTypeNameFromClrType = function (clrType) { return dotnetTypeToKustoType[clrType] || clrType; };
+    var getCslTypeNameFromClrType = function (clrType) { return dotnetTypeToKustoType[clrType] || clrType; };
+    exports.getCslTypeNameFromClrType = getCslTypeNameFromClrType;
     var kustoTypeToEntityDataType = {
         object: 'Object',
         bool: 'Boolean',
@@ -177,26 +178,30 @@ define('vs/language/kusto/languageService/schema',["require", "exports"], functi
         dynamic: 'Dynamic',
         timespan: 'TimeSpan'
     };
-    exports.getEntityDataTypeFromCslType = function (cslType) { return kustoTypeToEntityDataType[cslType] || cslType; };
-    exports.getCallName = function (fn) {
-        return fn.name + "(" + fn.inputParameters.map(function (p) { return "{" + p.name + "}"; }).join(',') + ")";
+    var getEntityDataTypeFromCslType = function (cslType) { return kustoTypeToEntityDataType[cslType] || cslType; };
+    exports.getEntityDataTypeFromCslType = getEntityDataTypeFromCslType;
+    var getCallName = function (fn) {
+        return "".concat(fn.name, "(").concat(fn.inputParameters.map(function (p) { return "{".concat(p.name, "}"); }).join(','), ")");
     };
-    exports.getExpression = function (fn) {
-        return "let " + fn.name + " = " + exports.getInputParametersAsCslString(fn.inputParameters) + " " + fn.body;
+    exports.getCallName = getCallName;
+    var getExpression = function (fn) {
+        return "let ".concat(fn.name, " = ").concat((0, exports.getInputParametersAsCslString)(fn.inputParameters), " ").concat(fn.body);
     };
-    exports.getInputParametersAsCslString = function (inputParameters) {
-        return "(" + inputParameters.map(function (inputParameter) { return getInputParameterAsCslString(inputParameter); }).join(',') + ")";
+    exports.getExpression = getExpression;
+    var getInputParametersAsCslString = function (inputParameters) {
+        return "(".concat(inputParameters.map(function (inputParameter) { return getInputParameterAsCslString(inputParameter); }).join(','), ")");
     };
+    exports.getInputParametersAsCslString = getInputParametersAsCslString;
     var getInputParameterAsCslString = function (inputParameter) {
         // If this is a tabular parameter
         if (inputParameter.columns && inputParameter.columns.length > 0) {
             var attributesAsString = inputParameter.columns
-                .map(function (col) { return col.name + ":" + (col.cslType || exports.getCslTypeNameFromClrType(col.type)); })
+                .map(function (col) { return "".concat(col.name, ":").concat(col.cslType || (0, exports.getCslTypeNameFromClrType)(col.type)); })
                 .join(',');
-            return inputParameter.name + ":" + (attributesAsString === '' ? '*' : attributesAsString);
+            return "".concat(inputParameter.name, ":").concat(attributesAsString === '' ? '*' : attributesAsString);
         }
         else {
-            return inputParameter.name + ":" + (inputParameter.cslType || exports.getCslTypeNameFromClrType(inputParameter.type));
+            return "".concat(inputParameter.name, ":").concat(inputParameter.cslType || (0, exports.getCslTypeNameFromClrType)(inputParameter.type));
         }
     };
 });
@@ -6860,7 +6865,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
         TokenKind[TokenKind["PluginToken"] = 131072] = "PluginToken";
         TokenKind[TokenKind["BracketRangeToken"] = 262144] = "BracketRangeToken";
         TokenKind[TokenKind["ClientDirectiveToken"] = 524288] = "ClientDirectiveToken";
-    })(TokenKind = exports.TokenKind || (exports.TokenKind = {}));
+    })(TokenKind || (exports.TokenKind = TokenKind = {}));
     /**
      * convert the bridge.net object to a plain javascript object that only contains data.
      * @param k2Classifications @kusto/language-service-next bridge.net object
@@ -7035,7 +7040,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             this._newlineAppendPipePolicy.Text = '\n| ';
         }
         KustoLanguageService.prototype.createDatabaseUniqueName = function (clusterName, databaseName) {
-            return clusterName + "_" + databaseName;
+            return "".concat(clusterName, "_").concat(databaseName);
         };
         Object.defineProperty(KustoLanguageService.prototype, "_kustoJsSchemaV2", {
             /**
@@ -7082,20 +7087,20 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
          */
         KustoLanguageService.prototype.debugGlobalState = function (globals) {
             // iterate over clusters
-            console.log("globals.Clusters.Count: " + globals.Clusters.Count);
+            console.log("globals.Clusters.Count: ".concat(globals.Clusters.Count));
             for (var i = 0; i < globals.Clusters.Count; i++) {
                 var cluster = globals.Clusters.getItem(i);
-                console.log("cluster: " + cluster.Name);
+                console.log("cluster: ".concat(cluster.Name));
                 // iterate over databases
-                console.log("cluster.Databases.Count: " + cluster.Databases.Count);
+                console.log("cluster.Databases.Count: ".concat(cluster.Databases.Count));
                 for (var i2 = 0; i2 < cluster.Databases.Count; i2++) {
                     var database = cluster.Databases.getItem(i2);
-                    console.log("cluster.database: [" + cluster.Name + "].[" + database.Name + "]");
+                    console.log("cluster.database: [".concat(cluster.Name, "].[").concat(database.Name, "]"));
                     // iterate over tables
-                    console.log("cluster.Databases.Tables.Count: " + database.Tables.Count);
+                    console.log("cluster.Databases.Tables.Count: ".concat(database.Tables.Count));
                     for (var i3 = 0; i3 < database.Tables.Count; i3++) {
                         var table = database.Tables.getItem(i3);
-                        console.log("cluster.database.table: [" + cluster.Name + "].[" + database.Name + "].[" + table.Name + "]");
+                        console.log("cluster.database.table: [".concat(cluster.Name, "].[").concat(database.Name, "].[").concat(table.Name, "]"));
                     }
                 }
             }
@@ -8033,16 +8038,16 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             }
             var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
             var t = 3; // maxFunctionsBodyLookupDepth?
-            return Promise.resolve(getTimeFilterInfo_1.GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
+            return Promise.resolve((0, getTimeFilterInfo_1.GetTimeFilterInfoInternal)(parsedAndAnalyzed.Syntax, t));
         };
         KustoLanguageService.prototype.getTables = function (document, cursorOffset) {
             var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
-            var tables = getTimeFilterInfo_1.GetTables(parsedAndAnalyzed.Syntax);
+            var tables = (0, getTimeFilterInfo_1.GetTables)(parsedAndAnalyzed.Syntax);
             return Promise.resolve(tables);
         };
         KustoLanguageService.prototype.getResultTypes = function (document, cursorOffset) {
             var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
-            var resultTypes = getTimeFilterInfo_1.GetResultTypes(parsedAndAnalyzed.Syntax);
+            var resultTypes = (0, getTimeFilterInfo_1.GetResultTypes)(parsedAndAnalyzed.Syntax);
             return Promise.resolve(resultTypes);
         };
         Object.defineProperty(KustoLanguageService, "dummySchema", {
@@ -8142,7 +8147,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                             table.columns.forEach(function (column) {
                                 var kColumn = new k.KustoIntelliSenseColumnEntity();
                                 kColumn.Name = column.name;
-                                kColumn.TypeCode = k.EntityDataType[schema_1.getEntityDataTypeFromCslType(column.type)];
+                                kColumn.TypeCode = k.EntityDataType[(0, schema_1.getEntityDataTypeFromCslType)(column.type)];
                                 cols.push(kColumn);
                             });
                             kTable.Columns = new Bridge.ArrayEnumerable(cols);
@@ -8195,8 +8200,8 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
          * @param params scalar parameters
          */
         KustoLanguageService.scalarParametersToSignature = function (params) {
-            var signatureWithoutParens = params.map(function (param) { return param.name + ": " + param.cslType; }).join(', ');
-            return "(" + signatureWithoutParens + ")";
+            var signatureWithoutParens = params.map(function (param) { return "".concat(param.name, ": ").concat(param.cslType); }).join(', ');
+            return "(".concat(signatureWithoutParens, ")");
         };
         /**
          * Returns something like '(x: string, T: (y: int))'
@@ -8208,14 +8213,14 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                 .map(function (param) {
                 if (param.columns) {
                     var tableSignature = _this.scalarParametersToSignature(param.columns);
-                    return param.name + ": " + tableSignature;
+                    return "".concat(param.name, ": ").concat(tableSignature);
                 }
                 else {
-                    return param.name + ": " + param.cslType;
+                    return "".concat(param.name, ": ").concat(param.cslType);
                 }
             })
                 .join(', ');
-            return "(" + signatureWithoutParens + ")";
+            return "(".concat(signatureWithoutParens, ")");
         };
         /**
          * converts a function definition to a let statement.
@@ -8223,18 +8228,18 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
          */
         KustoLanguageService.toLetStatement = function (fn) {
             var signature = this.inputParameterToSignature(fn.inputParameters);
-            return "let " + fn.name + " = " + signature + " " + fn.body;
+            return "let ".concat(fn.name, " = ").concat(signature, " ").concat(fn.body);
         };
         KustoLanguageService.createColumnSymbol = function (col) {
-            return new sym.ColumnSymbol(col.name, sym.ScalarTypes.GetSymbol(schema_1.getCslTypeNameFromClrType(col.type)), col.docstring);
+            return new sym.ColumnSymbol(col.name, sym.ScalarTypes.GetSymbol((0, schema_1.getCslTypeNameFromClrType)(col.type)), col.docstring);
         };
         KustoLanguageService.createParameterSymbol = function (param) {
-            var paramSymbol = Kusto.Language.Symbols.ScalarTypes.GetSymbol(schema_1.getCslTypeNameFromClrType(param.type));
+            var paramSymbol = Kusto.Language.Symbols.ScalarTypes.GetSymbol((0, schema_1.getCslTypeNameFromClrType)(param.type));
             return new sym.ParameterSymbol(param.name, paramSymbol, null);
         };
         KustoLanguageService.createParameter = function (param) {
             if (!param.columns) {
-                var paramSymbol = Kusto.Language.Symbols.ScalarTypes.GetSymbol(schema_1.getCslTypeNameFromClrType(param.type));
+                var paramSymbol = Kusto.Language.Symbols.ScalarTypes.GetSymbol((0, schema_1.getCslTypeNameFromClrType)(param.type));
                 var expression = param.cslDefaultValue && typeof param.cslDefaultValue === 'string'
                     ? parsing.QueryParser.ParseLiteral$1(param.cslDefaultValue)
                     : undefined;
@@ -8363,7 +8368,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
          */
         KustoLanguageService.prototype.getSortText = function (order) {
             if (order <= 0) {
-                throw new RangeError("order should be a number >= 1. instead got " + order);
+                throw new RangeError("order should be a number >= 1. instead got ".concat(order));
             }
             var sortText = '';
             var numCharacters = 26; // "z" - "a" + 1;
@@ -8568,7 +8573,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.addClusterToSchema = function (uri, clusterName, databasesNames) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("addClusterToSchema: document is " + document + ". uri is " + uri);
+                console.error("addClusterToSchema: document is ".concat(document, ". uri is ").concat(uri));
                 return Promise.resolve();
             }
             return this._languageService.addClusterToSchema(document, clusterName, databasesNames);
@@ -8576,7 +8581,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.addDatabaseToSchema = function (uri, clusterName, databaseSchema) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("addDatabaseToSchema: document is " + document + ". uri is " + uri);
+                console.error("addDatabaseToSchema: document is ".concat(document, ". uri is ").concat(uri));
                 return Promise.resolve();
             }
             return this._languageService.addDatabaseToSchema(document, clusterName, databaseSchema);
@@ -8593,7 +8598,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getCommandInContext = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getCommandInContext: document is " + document + ". uri is " + uri);
+                console.error("getCommandInContext: document is ".concat(document, ". uri is ").concat(uri));
                 return null;
             }
             var commandInContext = this._languageService.getCommandInContext(document, cursorOffset);
@@ -8605,7 +8610,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getQueryParams = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getQueryParams: document is " + document + ". uri is " + uri);
+                console.error("getQueryParams: document is ".concat(document, ". uri is ").concat(uri));
                 return null;
             }
             var queryParams = this._languageService.getQueryParams(document, cursorOffset);
@@ -8617,7 +8622,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getGlobalParams = function (uri) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getGLobalParams: document is " + document + ". uri is " + uri);
+                console.error("getGLobalParams: document is ".concat(document, ". uri is ").concat(uri));
                 return null;
             }
             var globalParams = this._languageService.getGlobalParams(document);
@@ -8629,7 +8634,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getReferencedGlobalParams = function (uri, cursorOffest) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getReferencedGlobalParams: document is " + document + ". uri is " + uri);
+                console.error("getReferencedGlobalParams: document is ".concat(document, ". uri is ").concat(uri));
                 return null;
             }
             var referencedParams = this._languageService.getReferencedGlobalParams(document, cursorOffest);
@@ -8641,7 +8646,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getRenderInfo = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getRenderInfo: document is " + document + ". uri is " + uri);
+                console.error("getRenderInfo: document is ".concat(document, ". uri is ").concat(uri));
             }
             return this._languageService.getRenderInfo(document, cursorOffset).then(function (result) {
                 if (!result) {
@@ -8659,7 +8664,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getCommandAndLocationInContext = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getCommandAndLocationInContext: document is " + document + ". uri is " + uri);
+                console.error("getCommandAndLocationInContext: document is ".concat(document, ". uri is ").concat(uri));
                 return Promise.resolve(null);
             }
             return this._languageService.getCommandAndLocationInContext(document, cursorOffset).then(function (result) {
@@ -8678,7 +8683,7 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         KustoWorker.prototype.getCommandsInDocument = function (uri) {
             var document = this._getTextDocument(uri);
             if (!document) {
-                console.error("getCommandInDocument: document is " + document + ". uri is " + uri);
+                console.error("getCommandInDocument: document is ".concat(document, ". uri is ").concat(uri));
                 return null;
             }
             return this._languageService.getCommandsInDocument(document);

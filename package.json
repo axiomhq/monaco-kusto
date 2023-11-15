@@ -31,28 +31,28 @@
     "main": "./release/min/monaco.contribution.js",
     "types": "./release/min/monaco.contribution.d.ts",
     "devDependencies": {
-        "@types/jest": "^21.1.8",
+        "@types/jest": "^29.0.0",
         "@types/lodash": "^4.14.109",
         "@types/xregexp": "^3.0.29",
         "concurrently": "^5.1.0",
         "copy-dir-cli": "0.0.3",
         "event-stream": "3.3.4",
         "http-server": "^0.12.3",
-        "jest": "^26.1.0",
+        "jest": "^29.0.0",
         "live-server": "^1.2.1",
         "lodash": "^4.17.4",
         "merge-stream": "1.0.0",
         "minimatch": "^3.0.4",
-        "monaco-editor-core": "0.33.0",
+        "monaco-editor-core": "0.41.0",
         "monaco-languages": "2.11.1",
         "monaco-plugin-helpers": "^1.0.3",
         "object-assign": "4.1.0",
         "requirejs": "^2.3.6",
         "terser": "^4.6.7",
-        "ts-jest": "^26.1.1",
-        "typescript": "3.9.7",
-        "vscode-languageserver-types": "3.16.0",
+        "ts-jest": "^29.0.0",
+        "typescript": "^5.1.6",
         "vscode-languageserver-textdocument": "1.0.4",
+        "vscode-languageserver-types": "3.16.0",
         "xregexp": "^3.2.0"
     },
     "dependencies": {
@@ -60,7 +60,7 @@
         "@kusto/language-service-next": "0.0.54"
     },
     "peerDependencies": {
-        "monaco-editor": "0.31.0"
+        "monaco-editor": "0.41.0"
     },
     "jest": {
         "rootDir": "src",

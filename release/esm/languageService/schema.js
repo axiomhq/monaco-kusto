@@ -42,23 +42,23 @@ var kustoTypeToEntityDataType = {
 };
 export var getEntityDataTypeFromCslType = function (cslType) { return kustoTypeToEntityDataType[cslType] || cslType; };
 export var getCallName = function (fn) {
-    return fn.name + "(" + fn.inputParameters.map(function (p) { return "{" + p.name + "}"; }).join(',') + ")";
+    return "".concat(fn.name, "(").concat(fn.inputParameters.map(function (p) { return "{".concat(p.name, "}"); }).join(','), ")");
 };
 export var getExpression = function (fn) {
-    return "let " + fn.name + " = " + getInputParametersAsCslString(fn.inputParameters) + " " + fn.body;
+    return "let ".concat(fn.name, " = ").concat(getInputParametersAsCslString(fn.inputParameters), " ").concat(fn.body);
 };
 export var getInputParametersAsCslString = function (inputParameters) {
-    return "(" + inputParameters.map(function (inputParameter) { return getInputParameterAsCslString(inputParameter); }).join(',') + ")";
+    return "(".concat(inputParameters.map(function (inputParameter) { return getInputParameterAsCslString(inputParameter); }).join(','), ")");
 };
 var getInputParameterAsCslString = function (inputParameter) {
     // If this is a tabular parameter
     if (inputParameter.columns && inputParameter.columns.length > 0) {
         var attributesAsString = inputParameter.columns
-            .map(function (col) { return col.name + ":" + (col.cslType || getCslTypeNameFromClrType(col.type)); })
+            .map(function (col) { return "".concat(col.name, ":").concat(col.cslType || getCslTypeNameFromClrType(col.type)); })
             .join(',');
-        return inputParameter.name + ":" + (attributesAsString === '' ? '*' : attributesAsString);
+        return "".concat(inputParameter.name, ":").concat(attributesAsString === '' ? '*' : attributesAsString);
     }
     else {
-        return inputParameter.name + ":" + (inputParameter.cslType || getCslTypeNameFromClrType(inputParameter.type));
+        return "".concat(inputParameter.name, ":").concat(inputParameter.cslType || getCslTypeNameFromClrType(inputParameter.type));
     }
 };
