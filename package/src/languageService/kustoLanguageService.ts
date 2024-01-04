@@ -1,5 +1,5 @@
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
-/// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
+/// <reference path="../../node_modules/@axiomhq/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
 import { GetResultTypes, GetTables, GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
@@ -91,7 +91,7 @@ export enum TokenKind {
 }
 
 /**
- * A plain old javascript object that is roughly equivalent to the @kusto/language-service-next object, but without
+ * A plain old javascript object that is roughly equivalent to the @axiomhq/language-service-next object, but without
  * all the Bridge.Net properties and methods. this object is being sent from web worker to main thread and turns out
  * that when posting the message we lose all properties (and functions), thus we use a POJO instead.
  * This issue started happening once upgrading to 0.20.0 from 0.15.5.
@@ -105,7 +105,7 @@ export interface ClassifiedRange {
 
 /**
  * convert the bridge.net object to a plain javascript object that only contains data.
- * @param k2Classifications @kusto/language-service-next bridge.net object
+ * @param k2Classifications @axiomhq/language-service-next bridge.net object
  */
 function toClassifiedRange(k2Classifications: k2.ClassifiedRange[]): ClassifiedRange[] {
     return k2Classifications.map((classification) => ({
@@ -228,7 +228,6 @@ class KustoLanguageService implements LanguageService {
     private _newlineAppendPipePolicy: Kusto.Data.IntelliSense.ApplyPolicy;
     private _toOptionKind: { [completionKind in k2.CompletionKind]: k.OptionKind } = {
         [k2.CompletionKind.AggregateFunction]: k.OptionKind.FunctionAggregation,
-        [k2.CompletionKind.App]: k.OptionKind.App,
         [k2.CompletionKind.BuiltInFunction]: k.OptionKind.FunctionServerSide,
         [k2.CompletionKind.Cluster]: k.OptionKind.Database,
         [k2.CompletionKind.Column]: k.OptionKind.Column,
@@ -2208,7 +2207,6 @@ class KustoLanguageService implements LanguageService {
 
     private _kustoKindToLsKindV2: { [k in k2.CompletionKind]: ls.CompletionItemKind } = {
         [k2.CompletionKind.AggregateFunction]: ls.CompletionItemKind.Field,
-        [k2.CompletionKind.App]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.BuiltInFunction]: ls.CompletionItemKind.Field,
         [k2.CompletionKind.Cluster]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.Column]: ls.CompletionItemKind.Function,

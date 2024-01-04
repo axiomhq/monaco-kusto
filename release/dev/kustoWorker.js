@@ -6868,7 +6868,7 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
     })(TokenKind || (exports.TokenKind = TokenKind = {}));
     /**
      * convert the bridge.net object to a plain javascript object that only contains data.
-     * @param k2Classifications @kusto/language-service-next bridge.net object
+     * @param k2Classifications @axiomhq/language-service-next bridge.net object
      */
     function toClassifiedRange(k2Classifications) {
         return k2Classifications.map(function (classification) { return ({
@@ -6898,7 +6898,6 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             var _this = this;
             this._toOptionKind = (_a = {},
                 _a[k2.CompletionKind.AggregateFunction] = k.OptionKind.FunctionAggregation,
-                _a[k2.CompletionKind.App] = k.OptionKind.App,
                 _a[k2.CompletionKind.BuiltInFunction] = k.OptionKind.FunctionServerSide,
                 _a[k2.CompletionKind.Cluster] = k.OptionKind.Database,
                 _a[k2.CompletionKind.Column] = k.OptionKind.Column,
@@ -6982,7 +6981,6 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
                 _b);
             this._kustoKindToLsKindV2 = (_c = {},
                 _c[k2.CompletionKind.AggregateFunction] = ls.CompletionItemKind.Field,
-                _c[k2.CompletionKind.App] = ls.CompletionItemKind.Class,
                 _c[k2.CompletionKind.BuiltInFunction] = ls.CompletionItemKind.Field,
                 _c[k2.CompletionKind.Cluster] = ls.CompletionItemKind.Class,
                 _c[k2.CompletionKind.Column] = ls.CompletionItemKind.Function,
