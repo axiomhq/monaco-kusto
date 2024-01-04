@@ -117,6 +117,7 @@ var KustoLanguageService = /** @class */ (function () {
         var _this = this;
         this._toOptionKind = (_a = {},
             _a[k2.CompletionKind.AggregateFunction] = k.OptionKind.FunctionAggregation,
+            _a[k2.CompletionKind.App] = k.OptionKind.FunctionLocal,
             _a[k2.CompletionKind.BuiltInFunction] = k.OptionKind.FunctionServerSide,
             _a[k2.CompletionKind.Cluster] = k.OptionKind.Database,
             _a[k2.CompletionKind.Column] = k.OptionKind.Column,
@@ -200,6 +201,7 @@ var KustoLanguageService = /** @class */ (function () {
             _b);
         this._kustoKindToLsKindV2 = (_c = {},
             _c[k2.CompletionKind.AggregateFunction] = ls.CompletionItemKind.Field,
+            _c[k2.CompletionKind.App] = ls.CompletionItemKind.Class,
             _c[k2.CompletionKind.BuiltInFunction] = ls.CompletionItemKind.Field,
             _c[k2.CompletionKind.Cluster] = ls.CompletionItemKind.Class,
             _c[k2.CompletionKind.Column] = ls.CompletionItemKind.Function,

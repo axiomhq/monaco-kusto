@@ -228,6 +228,7 @@ class KustoLanguageService implements LanguageService {
     private _newlineAppendPipePolicy: Kusto.Data.IntelliSense.ApplyPolicy;
     private _toOptionKind: { [completionKind in k2.CompletionKind]: k.OptionKind } = {
         [k2.CompletionKind.AggregateFunction]: k.OptionKind.FunctionAggregation,
+        [k2.CompletionKind.App]: k.OptionKind.FunctionLocal,
         [k2.CompletionKind.BuiltInFunction]: k.OptionKind.FunctionServerSide,
         [k2.CompletionKind.Cluster]: k.OptionKind.Database,
         [k2.CompletionKind.Column]: k.OptionKind.Column,
@@ -2207,6 +2208,7 @@ class KustoLanguageService implements LanguageService {
 
     private _kustoKindToLsKindV2: { [k in k2.CompletionKind]: ls.CompletionItemKind } = {
         [k2.CompletionKind.AggregateFunction]: ls.CompletionItemKind.Field,
+        [k2.CompletionKind.App]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.BuiltInFunction]: ls.CompletionItemKind.Field,
         [k2.CompletionKind.Cluster]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.Column]: ls.CompletionItemKind.Function,
