@@ -2208,7 +2208,7 @@ class KustoLanguageService implements LanguageService {
 
     private _kustoKindToLsKindV2: { [k in k2.CompletionKind]: ls.CompletionItemKind } = {
         [k2.CompletionKind.AggregateFunction]: ls.CompletionItemKind.Field,
-        [k2.CompletionKind.App]: ls.CompletionItemKind.Class,
+        [k2.CompletionKind.App]: ls.CompletionItemKind.Struct,
         [k2.CompletionKind.BuiltInFunction]: ls.CompletionItemKind.Field,
         [k2.CompletionKind.Cluster]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.Column]: ls.CompletionItemKind.Function,
