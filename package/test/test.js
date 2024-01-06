@@ -16,7 +16,7 @@ var requirejs_dev_config = {
         'vs/language/kusto': '../out/amd',
         vs: '../out/vs',
         'language-service': './node_modules/@kusto/language-service/',
-        'language-service-next': './node_modules/@kusto/language-service-next/',
+        'language-service-next': './node_modules/@axiomhq/language-service-next/',
         lodash: './node_modules/lodash/lodash.min',
         'vscode-languageserver-types': '../node_modules/vscode-languageserver-types/lib/umd/main',
         // For worker:

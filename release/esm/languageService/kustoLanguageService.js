@@ -10,7 +10,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 /// <reference path="../../node_modules/@kusto/language-service/Kusto.JavaScript.Client.d.ts" />
-/// <reference path="../../node_modules/@kusto/language-service-next/Kusto.Language.Bridge.d.ts" />
+/// <reference path="../../node_modules/@axiomhq/language-service-next/Kusto.Language.Bridge.d.ts" />
 /// <reference path="../typings/refs.d.ts" />
 import { GetResultTypes, GetTables, GetTimeFilterInfoInternal } from './getTimeFilterInfo';
 import * as s from './schema';
@@ -87,7 +87,7 @@ export var TokenKind;
 })(TokenKind || (TokenKind = {}));
 /**
  * convert the bridge.net object to a plain javascript object that only contains data.
- * @param k2Classifications @kusto/language-service-next bridge.net object
+ * @param k2Classifications @axiomhq/language-service-next bridge.net object
  */
 function toClassifiedRange(k2Classifications) {
     return k2Classifications.map(function (classification) { return ({
@@ -117,6 +117,7 @@ var KustoLanguageService = /** @class */ (function () {
         var _this = this;
         this._toOptionKind = (_a = {},
             _a[k2.CompletionKind.AggregateFunction] = k.OptionKind.FunctionAggregation,
+            _a[k2.CompletionKind.App] = k.OptionKind.FunctionLocal,
             _a[k2.CompletionKind.BuiltInFunction] = k.OptionKind.FunctionServerSide,
             _a[k2.CompletionKind.Cluster] = k.OptionKind.Database,
             _a[k2.CompletionKind.Column] = k.OptionKind.Column,
@@ -200,6 +201,7 @@ var KustoLanguageService = /** @class */ (function () {
             _b);
         this._kustoKindToLsKindV2 = (_c = {},
             _c[k2.CompletionKind.AggregateFunction] = ls.CompletionItemKind.Field,
+            _c[k2.CompletionKind.App] = ls.CompletionItemKind.Class,
             _c[k2.CompletionKind.BuiltInFunction] = ls.CompletionItemKind.Field,
             _c[k2.CompletionKind.Cluster] = ls.CompletionItemKind.Class,
             _c[k2.CompletionKind.Column] = ls.CompletionItemKind.Function,
