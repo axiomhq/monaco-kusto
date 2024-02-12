@@ -1260,11 +1260,17 @@ var KustoLanguageService = /** @class */ (function () {
         return Promise.resolve(GetTimeFilterInfoInternal(parsedAndAnalyzed.Syntax, t));
     };
     KustoLanguageService.prototype.getTables = function (document, cursorOffset) {
+        if (!document) {
+            return Promise.resolve(null);
+        }
         var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
         var tables = GetTables(parsedAndAnalyzed.Syntax);
         return Promise.resolve(tables);
     };
     KustoLanguageService.prototype.getResultTypes = function (document, cursorOffset) {
+        if (!document) {
+            return Promise.resolve(null);
+        }
         var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
         var resultTypes = GetResultTypes(parsedAndAnalyzed.Syntax);
         return Promise.resolve(resultTypes);
