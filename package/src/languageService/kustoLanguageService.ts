@@ -1529,7 +1529,6 @@ class KustoLanguageService implements LanguageService {
         return Promise.resolve({ contents: text });
     }
 
-
     getTimeFilterInfo(document: TextDocument, cursorOffset: number): Promise<any | undefined> {
         if (!document || !this.isIntellisenseV2()) {
             return Promise.resolve([]);
@@ -1543,14 +1542,20 @@ class KustoLanguageService implements LanguageService {
     }
 
     getTables(document: TextDocument, cursorOffset: number): Promise<any> {
+        if (!document) {
+            return Promise.resolve(null);
+        }
         const parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
-        
+
         const tables = GetTables(parsedAndAnalyzed.Syntax);
 
         return Promise.resolve(tables);
     }
 
     getResultTypes(document: TextDocument, cursorOffset: number): Promise<any> {
+        if (!document) {
+            return Promise.resolve(null);
+        }
         const parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
 
         const resultTypes = GetResultTypes(parsedAndAnalyzed.Syntax);

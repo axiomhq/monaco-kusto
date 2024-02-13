@@ -199,15 +199,23 @@ var KustoWorker = /** @class */ (function () {
     };
     KustoWorker.prototype.getTimeFilterInfo = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getTimeFilterInfo(document, cursorOffset);
     };
-    ;
     KustoWorker.prototype.getTables = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getTables(document, cursorOffset);
     };
     KustoWorker.prototype.getResultTypes = function (uri, cursorOffset) {
         var document = this._getTextDocument(uri);
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getResultTypes(document, cursorOffset);
     };
     KustoWorker.prototype.getClusterReferences = function (uri, cursorOffset) {

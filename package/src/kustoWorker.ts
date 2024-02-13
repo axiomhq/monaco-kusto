@@ -268,19 +268,25 @@ export class KustoWorker {
 
     getTimeFilterInfo(uri, cursorOffset) {
         const document = this._getTextDocument(uri);
-
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getTimeFilterInfo(document, cursorOffset);
-    };
+    }
 
     getTables(uri: string, cursorOffset: number) {
         const document = this._getTextDocument(uri);
-
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getTables(document, cursorOffset);
     }
 
     getResultTypes(uri: string, cursorOffset: number) {
         const document = this._getTextDocument(uri);
-
+        if (!document) {
+            return Promise.resolve(null);
+        }
         return this._languageService.getResultTypes(document, cursorOffset);
     }
 

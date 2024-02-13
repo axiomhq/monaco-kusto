@@ -8041,11 +8041,17 @@ define('vs/language/kusto/languageService/kustoLanguageService',["require", "exp
             return Promise.resolve((0, getTimeFilterInfo_1.GetTimeFilterInfoInternal)(parsedAndAnalyzed.Syntax, t));
         };
         KustoLanguageService.prototype.getTables = function (document, cursorOffset) {
+            if (!document) {
+                return Promise.resolve(null);
+            }
             var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
             var tables = (0, getTimeFilterInfo_1.GetTables)(parsedAndAnalyzed.Syntax);
             return Promise.resolve(tables);
         };
         KustoLanguageService.prototype.getResultTypes = function (document, cursorOffset) {
+            if (!document) {
+                return Promise.resolve(null);
+            }
             var parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
             var resultTypes = (0, getTimeFilterInfo_1.GetResultTypes)(parsedAndAnalyzed.Syntax);
             return Promise.resolve(resultTypes);
@@ -8758,15 +8764,23 @@ define('vs/language/kusto/kustoWorker',["require", "exports", "./languageService
         };
         KustoWorker.prototype.getTimeFilterInfo = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
+            if (!document) {
+                return Promise.resolve(null);
+            }
             return this._languageService.getTimeFilterInfo(document, cursorOffset);
         };
-        ;
         KustoWorker.prototype.getTables = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
+            if (!document) {
+                return Promise.resolve(null);
+            }
             return this._languageService.getTables(document, cursorOffset);
         };
         KustoWorker.prototype.getResultTypes = function (uri, cursorOffset) {
             var document = this._getTextDocument(uri);
+            if (!document) {
+                return Promise.resolve(null);
+            }
             return this._languageService.getResultTypes(document, cursorOffset);
         };
         KustoWorker.prototype.getClusterReferences = function (uri, cursorOffset) {
