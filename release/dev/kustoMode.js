@@ -2797,6 +2797,10 @@ define('vs/language/kusto/languageFeatures',["require", "exports", "vscode-langu
             text: textEdit.newText,
         };
     }
+    var DEMOTED_ITEMS = ['_sysTime'];
+    function demoteItem(item) {
+        return "zzz".concat(item);
+    }
     var CompletionAdapter = /** @class */ (function () {
         function CompletionAdapter(_worker, languageSettings) {
             this._worker = _worker;
@@ -2827,7 +2831,7 @@ define('vs/language/kusto/languageFeatures',["require", "exports", "vscode-langu
                     var item = {
                         label: entry.label,
                         insertText: entry.insertText,
-                        sortText: entry.sortText,
+                        sortText: DEMOTED_ITEMS.includes(entry.label) ? demoteItem(entry.label) : entry.sortText,
                         filterText: entry.filterText,
                         documentation: entry.documentation,
                         detail: entry.detail,

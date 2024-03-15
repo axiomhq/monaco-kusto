@@ -653,6 +653,12 @@ function toTextEdit(textEdit: ls.TextEdit): monaco.editor.ISingleEditOperation {
     };
 }
 
+const DEMOTED_ITEMS = ['_sysTime'];
+
+function demoteItem(item: string) {
+    return `zzz${item}`;
+}
+
 export class CompletionAdapter implements monaco.languages.CompletionItemProvider {
     constructor(private _worker: WorkerAccessor, private languageSettings: monaco.languages.kusto.LanguageSettings) {}
 
@@ -685,7 +691,7 @@ export class CompletionAdapter implements monaco.languages.CompletionItemProvide
                     let item: monaco.languages.CompletionItem = {
                         label: entry.label,
                         insertText: entry.insertText,
-                        sortText: entry.sortText,
+                        sortText: DEMOTED_ITEMS.includes(entry.label) ? demoteItem(entry.label) : entry.sortText,
                         filterText: entry.filterText,
                         documentation: entry.documentation,
                         detail: entry.detail,
