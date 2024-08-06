@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "@tsconfig/create-react-app/tsconfig.json",
+    "include": ["./src/**/*"],
+    "compilerOptions": {
+        "types": ["@kusto/monaco-kusto/globalApi"],
+        "paths": {
+            "react": ["../../node_modules/@types/react"]
+        }
+    }
+}

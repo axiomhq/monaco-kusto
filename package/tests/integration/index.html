@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="./env/monakusto.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MonaKusto</title>
+    </head>
+    <body>
+        <script type="module" src="/env/main.ts"></script>
+        <h1>Monaco Kusto</h1>
+        <div id="container">
+            <div id="editor"></div>
+            <div id="settings">
+                <h2>Settings</h2>
+                <label onclick="updateLanguageSettings(event)">
+                    <input role="checkbox" id="openSuggestionDialogAfterPreviousSuggestionAccepted" type="checkbox" />
+                    Open Suggestion Dialog After Previous Suggestion Accepted
+                </label>
+                <label onclick="setThemeMode(event)">
+                    Theme:
+                    <input id="kusto-light" type="radio" value="kusto-light" name="theme" checked />
+                    <label for="kusto-light">Light</label>
+                    <input id="kusto-dark" type="radio" value="kusto-dark" name="theme" />
+                    <label for="kusto-dark">Dark</label>
+                </label>
+            </div>
+        </div>
+    </body>
+</html>

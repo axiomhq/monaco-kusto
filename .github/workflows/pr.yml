@@ -1,0 +1,43 @@
+name: pr-builds
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: yarn install
+        run: yarn install --immutable
+
+      - name: Check formatting
+        run: yarn format:check
+
+      - name: build
+        working-directory: package
+        run: yarn build
+
+      - name: Typecheck
+        run: yarn workspaces foreach -pv run ci:typecheck
+
+      - name: Install Playwright deps
+        run: yarn test:install
+
+      - name: test samples
+        run: yarn test:samples
+
+      - name: unit tests
+        working-directory: package
+        run: yarn test
+
+      - name: integration tests
+        working-directory: package
+        run: yarn test:integration

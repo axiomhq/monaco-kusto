@@ -1,41 +1,53 @@
-import IWorkerContext = monaco.worker.IWorkerContext;
-
-import * as kustoService from './languageService/kustoLanguageService';
-import { LanguageSettings } from './languageService/settings';
-import { Schema, showSchema, ScalarParameter, Database } from './languageService/schema';
 import * as ls from 'vscode-languageserver-types';
-import { ColorizationRange } from './languageService/kustoLanguageService';
-import { RenderInfo } from './languageService/renderInfo';
-import { FoldingRange } from 'vscode-languageserver-types';
+import type { worker } from 'monaco-editor/esm/vs/editor/editor.worker';
+import type { IRange } from 'monaco-editor/esm/vs/editor/editor.api';
 
-export class KustoWorker {
-    // --- model sync -----------------------
+import * as kustoService from './languageServiceManager/kustoLanguageService';
+import type { LanguageSettings } from './languageServiceManager/settings';
+import { Schema, showSchema, ScalarParameter, Database, TabularParameter } from './languageServiceManager/schema';
+import type { RenderInfo } from './languageServiceManager/renderInfo';
+import type { ClusterReference, DatabaseReference, KustoWorker } from './types';
+import { ClassificationRange } from './syntaxHighlighting/types';
 
-    private _ctx: IWorkerContext;
+export type InterfaceFor<C> = {
+    [Member in keyof C]: C[Member];
+};
+
+/**
+ * We're using this interface to send messages to a worker, so using
+ * `InterfaceFor` to make it not nominal is more accurate. {@link KustoWorker}
+ * is the public, more limited version of this interface.
+ */
+export type IKustoWorkerImpl = InterfaceFor<KustoWorkerImpl>;
+
+export class KustoWorkerImpl {
+    private _ctx: worker.IWorkerContext;
     private _languageService: kustoService.LanguageService;
     private _languageId: string;
     private _languageSettings: LanguageSettings;
 
-    constructor(ctx: IWorkerContext, createData: ICreateData) {
+    constructor(ctx: worker.IWorkerContext, createData: ICreateData) {
         this._ctx = ctx;
         this._languageSettings = createData.languageSettings;
         this._languageService = kustoService.getKustoLanguageService();
         this._languageService.configure(this._languageSettings);
     }
 
-    // --- language service host ---------------
-
     setSchema(schema: Schema) {
         return this._languageService.setSchema(schema);
     }
 
-    addClusterToSchema(uri: string, clusterName: string, databasesNames: string[]): Promise<void> {
+    addClusterToSchema(
+        uri: string,
+        clusterName: string,
+        databases: readonly { name: string; alternativeName?: string }[]
+    ): Promise<void> {
         const document = this._getTextDocument(uri);
         if (!document) {
             console.error(`addClusterToSchema: document is ${document}. uri is ${uri}`);
             return Promise.resolve();
         }
-        return this._languageService.addClusterToSchema(document, clusterName, databasesNames);
+        return this._languageService.addClusterToSchema(document, clusterName, databases);
     }
 
     addDatabaseToSchema(uri: string, clusterName: string, databaseSchema: Database): Promise<void> {
@@ -104,14 +116,29 @@ export class KustoWorker {
         return globalParams;
     }
 
-    getReferencedGlobalParams(uri: string, cursorOffest: number): Promise<{ name: string; type: string }[]> {
+    getReferencedSymbols(uri: string, cursorOffset?: number) {
         const document = this._getTextDocument(uri);
         if (!document) {
             console.error(`getReferencedGlobalParams: document is ${document}. uri is ${uri}`);
             return null;
         }
 
-        const referencedParams = this._languageService.getReferencedGlobalParams(document, cursorOffest);
+        const referencedParams = this._languageService.getReferencedSymbols(document, cursorOffset);
+        if (referencedParams === undefined) {
+            return null;
+        }
+
+        return referencedParams;
+    }
+
+    getReferencedGlobalParams(uri: string, cursorOffset?: number): Promise<{ name: string; type: string }[]> {
+        const document = this._getTextDocument(uri);
+        if (!document) {
+            console.error(`getReferencedGlobalParams: document is ${document}. uri is ${uri}`);
+            return null;
+        }
+
+        const referencedParams = this._languageService.getReferencedGlobalParams(document, cursorOffset);
         if (referencedParams === undefined) {
             return null;
         }
@@ -140,10 +167,7 @@ export class KustoWorker {
      * @param uri document URI
      * @param cursorOffset offset from start of document to cursor
      */
-    getCommandAndLocationInContext(
-        uri: string,
-        cursorOffset: number
-    ): Promise<{ text: string; range: monaco.IRange } | null> {
+    getCommandAndLocationInContext(uri: string, cursorOffset: number): Promise<{ text: string; range: IRange } | null> {
         const document = this._getTextDocument(uri);
         if (!document) {
             console.error(`getCommandAndLocationInContext: document is ${document}. uri is ${uri}`);
@@ -162,9 +186,14 @@ export class KustoWorker {
                     range: { start, end },
                 },
             } = result;
-            const range = new monaco.Range(start.line + 1, start.character + 1, end.line + 1, end.character + 1);
+
             return {
-                range,
+                range: {
+                    startLineNumber: start.line + 1,
+                    startColumn: start.character + 1,
+                    endLineNumber: end.line + 1,
+                    endColumn: end.character + 1,
+                },
                 text,
             };
         });
@@ -190,10 +219,25 @@ export class KustoWorker {
         return completions;
     }
 
-    doValidation(uri: string, intervals: { start: number; end: number }[]): Promise<ls.Diagnostic[]> {
+    doValidation(
+        uri: string,
+        intervals: { start: number; end: number }[],
+        includeWarnings?: boolean,
+        includeSuggestions?: boolean
+    ): Promise<ls.Diagnostic[]> {
         const document = this._getTextDocument(uri);
-        const diagnostics = this._languageService.doValidation(document, intervals);
+        const diagnostics = this._languageService.doValidation(
+            document,
+            intervals,
+            includeWarnings,
+            includeSuggestions
+        );
         return diagnostics;
+    }
+
+    getResultActions(uri: string, start: number, end: number) {
+        const document = this._getTextDocument(uri);
+        return this._languageService.getResultActions(document, start, end);
     }
 
     doRangeFormat(uri: string, range: ls.Range): Promise<ls.TextEdit[]> {
@@ -202,7 +246,7 @@ export class KustoWorker {
         return formatted;
     }
 
-    doFolding(uri: string): Promise<FoldingRange[]> {
+    doFolding(uri: string): Promise<ls.FoldingRange[]> {
         const document = this._getTextDocument(uri);
         const folding = this._languageService.doFolding(document);
         return folding;
@@ -220,14 +264,9 @@ export class KustoWorker {
         return formatted;
     }
 
-    // Colorize document. if offsets provided, will only colorize commands at these offsets. otherwise - will color the entire document.
-    doColorization(uri: string, colorizationIntervals: { start: number; end: number }[]): Promise<ColorizationRange[]> {
+    getClassifications(uri: string): Promise<ClassificationRange[]> {
         const document = this._getTextDocument(uri);
-        const colorizationInfo: Promise<ColorizationRange[]> = this._languageService.doColorization(
-            document,
-            colorizationIntervals
-        );
-        return colorizationInfo;
+        return this._languageService.getClassifications(document);
     }
 
     getClientDirective(text: string): Promise<{ isClientDirective: boolean; directiveWithoutLeadingComments: string }> {
@@ -262,8 +301,8 @@ export class KustoWorker {
         return hover;
     }
 
-    setParameters(parameters: ScalarParameter[]) {
-        return this._languageService.setParameters(parameters);
+    setParameters(scalarParameters: readonly ScalarParameter[], tabularParameters: readonly TabularParameter[]) {
+        return this._languageService.setParameters(scalarParameters, tabularParameters);
     }
 
     getTimeFilterInfo(uri, cursorOffset) {
@@ -290,7 +329,7 @@ export class KustoWorker {
         return this._languageService.getResultTypes(document, cursorOffset);
     }
 
-    getClusterReferences(uri: string, cursorOffset: number): Promise<kustoService.ClusterReference[]> {
+    getClusterReferences(uri: string, cursorOffset: number): Promise<ClusterReference[]> {
         let document = this._getTextDocument(uri);
         if (!document) {
             return Promise.resolve(null);
@@ -298,7 +337,7 @@ export class KustoWorker {
         return this._languageService.getClusterReferences(document, cursorOffset);
     }
 
-    getDatabaseReferences(uri: string, cursorOffset: number): Promise<kustoService.DatabaseReference[]> {
+    getDatabaseReferences(uri: string, cursorOffset: number): Promise<DatabaseReference[]> {
         let document = this._getTextDocument(uri);
         if (!document) {
             return Promise.resolve(null);
@@ -322,6 +361,9 @@ export interface ICreateData {
     languageSettings: LanguageSettings;
 }
 
-export function create(ctx: IWorkerContext, createData: ICreateData): KustoWorker {
-    return new KustoWorker(ctx, createData);
+/**
+ * Used when monaco-editor is resolved via amd modules
+ */
+export function create(ctx: worker.IWorkerContext, createData: ICreateData): IKustoWorkerImpl {
+    return new KustoWorkerImpl(ctx, createData);
 }

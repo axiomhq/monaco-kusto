@@ -1,8 +1,11 @@
+import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { getCurrentCommandRange } from './extendedEditor';
+
 /**
  * Highlights the command that surround cursor location
  */
 export default class KustoCommandHighlighter implements monaco.editor.IEditorContribution {
-    private static readonly ID = 'editor.contrib.kustoCommandHighliter';
+    private static readonly ID = 'editor.contrib.kustoCommandHighlighter';
     private static CURRENT_COMMAND_HIGHLIGHT: monaco.editor.IModelDecorationOptions = {
         className: 'selectionHighlight',
     };
@@ -11,11 +14,11 @@ export default class KustoCommandHighlighter implements monaco.editor.IEditorCon
     private decorations: monaco.editor.IEditorDecorationsCollection;
 
     /**
-     * Register to cursor movement and seleciton events.
+     * Register to cursor movement and selection events.
      * @param editor monaco editor instance
      */
     constructor(private editor: monaco.editor.ICodeEditor) {
-        // Note that selection update is triggered not only for selection changes, but also just when no text selection is occuring and cursor just moves around.
+        // Note that selection update is triggered not only for selection changes, but also just when no text selection is occurring and cursor just moves around.
         // This case is counted as a 0-length selection starting and ending on the cursor position.
         this.editor.onDidChangeCursorSelection((changeEvent) => {
             if (this.editor.getModel().getLanguageId() !== 'kusto') {
@@ -42,7 +45,10 @@ export default class KustoCommandHighlighter implements monaco.editor.IEditorCon
             return;
         }
 
-        const commandRange: monaco.Range = this.editor.getCurrentCommandRange(changeEvent.selection.getStartPosition());
+        const commandRange: monaco.Range = getCurrentCommandRange(
+            this.editor,
+            changeEvent.selection.getStartPosition()
+        );
         const decorations: monaco.editor.IModelDeltaDecoration[] = [
             {
                 range: commandRange,

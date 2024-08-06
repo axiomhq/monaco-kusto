@@ -1,7 +1,17 @@
-**/node_modules/
-/out/
-/release/
-/src/**/*.js.map
-/src/*.js.map
+/out
+/release
 /test/mode.txt
+
+# Copied from node_modules to here so it can be served by the dev web server
+/monaco-editor.css
+
+/README.md
 *.tgz
+
+# Vite
+.vite
+
+# Playwright
+.test-results
+test-results
+playwright-report
