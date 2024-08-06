@@ -15,6 +15,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axiomhq/language-service-next@npm:^0.2.8":
+  version: 0.2.8
+  resolution: "@axiomhq/language-service-next@npm:0.2.8"
+  checksum: af1eb84eccec31136a7877f2ff0081c35b6c9e9a5aa14d97ea37d2118970155a1f5dcdd88814a4beefa0c02a43d13ec8ed4afbc22b98237fa2209f82b9866f11
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/code-frame@npm:7.24.7"
@@ -2016,13 +2023,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kusto/language-service-next@npm:11.6.1":
-  version: 11.6.1
-  resolution: "@kusto/language-service-next@npm:11.6.1"
-  checksum: 0620b8ee83b192e46ec8a97e182fe5540e1fe24905daccd9752e27567754ae9941ab2b8cc2d64ac8f7dcbb32c72d57ca4dda14775877d9eb8f35b16e602a9d2e
-  languageName: node
-  linkType: hard
-
 "@kusto/language-service@npm:0.0.278":
   version: 0.0.278
   resolution: "@kusto/language-service@npm:0.0.278"
@@ -2058,12 +2058,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kusto/monaco-kusto@workspace:package"
   dependencies:
+    "@axiomhq/language-service-next": ^0.2.8
     "@babel/core": ^7.22.20
     "@babel/preset-env": ^7.22.20
     "@babel/preset-typescript": ^7.22.15
     "@faker-js/faker": ^8.4.1
     "@kusto/language-service": 0.0.279
-    "@kusto/language-service-next": 11.6.1
     "@playwright/test": ^1.44.0
     "@rollup/plugin-alias": ^5.0.0
     "@rollup/plugin-babel": ^6.0.3

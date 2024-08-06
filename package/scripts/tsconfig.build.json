@@ -1,7 +1,11 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "../tsconfig.json",
-    "include": ["../src/monaco.contribution.ts", "../src/KustoWorker.ts", "../src/KustoMode.ts"],
+    "include": [
+        "../src/monaco.contribution.ts",
+        "../src/KustoWorker.ts",
+        "../src/KustoMode.ts"
+    ],
     "compilerOptions": {
         "rootDir": "../src",
         "module": "esnext",
@@ -11,7 +15,7 @@
         "noEmit": false,
         "types": [
             "@kusto/language-service/Kusto.JavaScript.Client",
-            "@kusto/language-service-next/Kusto.Language.Bridge"
+            "@axiomhq/language-service-next/Kusto.Language.Bridge"
         ]
     }
 }

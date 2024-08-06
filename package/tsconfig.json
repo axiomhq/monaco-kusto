@@ -1,19 +1,26 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "include": ["./src/**/*", "./tests/**/*"],
+    "include": [
+        "./src/**/*",
+        "./tests/**/*"
+    ],
     "compilerOptions": {
         "rootDir": "./",
         "module": "esnext",
         "moduleResolution": "node",
         "target": "es5",
-        "lib": ["es2020", "dom", "WebWorker.ImportScripts"],
+        "lib": [
+            "es2020",
+            "dom",
+            "WebWorker.ImportScripts"
+        ],
         "noEmit": true,
         "skipLibCheck": true,
         "allowSyntheticDefaultImports": true,
         "isolatedModules": true,
         "types": [
             "@kusto/language-service/Kusto.JavaScript.Client",
-            "@kusto/language-service-next/Kusto.Language.Bridge",
+            "@axiomhq/language-service-next/Kusto.Language.Bridge",
             "node",
             "jest"
         ]

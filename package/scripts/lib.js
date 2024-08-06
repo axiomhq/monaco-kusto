@@ -30,7 +30,7 @@ const languageServiceFiles = [
     ['@kusto/language-service/bridge.min', 'bridge.min'],
     ['@kusto/language-service/Kusto.JavaScript.Client.min', 'kusto.javascript.client.min'],
     ['@kusto/language-service/newtonsoft.json.min', 'newtonsoft.json.min'],
-    ['@kusto/language-service-next/Kusto.Language.Bridge.min', 'Kusto.Language.Bridge.min'],
+    ['@axiomhq/language-service-next/Kusto.Language.Bridge.min', 'Kusto.Language.Bridge.min'],
 ];
 
 /**

@@ -273,6 +273,7 @@ class KustoLanguageService implements LanguageService {
         [k2.CompletionKind.Option]: k.OptionKind.Option,
         [k2.CompletionKind.Graph]: k.OptionKind.Graph,
         [k2.CompletionKind.EntityGroup]: k.OptionKind.EntityGroup,
+        [k2.CompletionKind.App]: k.OptionKind.None,
     };
 
     constructor(schema: s.EngineSchema, languageSettings: LanguageSettings) {
@@ -1554,9 +1555,10 @@ class KustoLanguageService implements LanguageService {
     }
 
     getTimeFilterInfo(document: TextDocument, cursorOffset: number): Promise<any | undefined> {
-        if (!document || !this.isIntellisenseV2()) {
-            return Promise.resolve([]);
-        }
+        // NOTE: this function went away after merging azure/monaco-kusto. unsure if it broken something.
+        // if (!document || !this.isIntellisenseV2()) {
+        //     return Promise.resolve([]);
+        // }
 
         const parsedAndAnalyzed = this.parseAndAnalyze(document, cursorOffset);
 
@@ -2164,6 +2166,7 @@ class KustoLanguageService implements LanguageService {
         [k2.CompletionKind.Option]: ls.CompletionItemKind.Text,
         [k2.CompletionKind.Graph]: ls.CompletionItemKind.Class,
         [k2.CompletionKind.EntityGroup]: ls.CompletionItemKind.Class,
+        [k2.CompletionKind.App]: ls.CompletionItemKind.Interface,
     };
 
     private kustoKindToLsKind(kustoKind: k.OptionKind): ls.CompletionItemKind {

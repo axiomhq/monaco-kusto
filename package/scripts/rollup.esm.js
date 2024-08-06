@@ -11,7 +11,7 @@ const ESM_WORKER_LANGUAGE_SERVER_IMPORT = [
     `import '@kusto/language-service/bridge.min';`,
     `import '@kusto/language-service/Kusto.JavaScript.Client.min';`,
     `import '@kusto/language-service/newtonsoft.json.min';`,
-    `import '@kusto/language-service-next/Kusto.Language.Bridge.min';`,
+    `import '@axiomhq/language-service-next/Kusto.Language.Bridge.min';`,
 ].join('\n');
 
 /**
