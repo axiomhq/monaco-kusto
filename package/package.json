@@ -1,6 +1,6 @@
 {
     "name": "@axiomhq/monaco-apl",
-    "version": "12.0.4",
+    "version": "0.0.0",
     "description": "APL plugin for the Monaco Editor",
     "author": {
         "name": "axiomhq"
