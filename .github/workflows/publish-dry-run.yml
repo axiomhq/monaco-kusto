@@ -1,4 +1,4 @@
-name: NPMPublish
+name: NPMPublish [Dry Run]
 
 on:
   pull_request:
