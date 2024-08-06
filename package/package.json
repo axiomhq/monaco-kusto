@@ -10,7 +10,7 @@
     "homepage": "https://github.com/axiomhq/monaco-apl",
     "repository": {
         "type": "git",
-        "url": "https://github.com/axiomhq/monaco-apl"
+        "url": "git+https://github.com/axiomhq/monaco-apl.git"
     },
     "scripts": {
         "build": "ts-node ./scripts/build.ts",
