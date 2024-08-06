@@ -10,7 +10,7 @@ import ReactDOM from 'react-dom/client';
 //
 import * as monaco from 'monaco-editor/esm/vs/editor/edcore.main';
 
-import { getKustoWorker } from '@kusto/monaco-kusto';
+import { getKustoWorker } from '@axiomhq/monaco-apl';
 
 import './index.css';
 
@@ -25,7 +25,7 @@ self.MonacoEnvironment = {
         if (label === 'kusto') {
             return new Worker(
                 /* webpackChunkName: "kusto-worker" */ new URL(
-                    '@kusto/monaco-kusto/release/esm/kusto.worker',
+                    '@axiomhq/monaco-apl/release/esm/kusto.worker',
                     import.meta.url
                 )
             );

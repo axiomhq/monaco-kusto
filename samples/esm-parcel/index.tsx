@@ -8,9 +8,9 @@
 //
 import * as monaco from 'monaco-editor/esm/vs/editor/edcore.main';
 
-import { getKustoWorker } from '@kusto/monaco-kusto';
+import { getKustoWorker } from '@axiomhq/monaco-apl';
 
-import kustoWorkerUrl from 'url:@kusto/monaco-kusto/release/esm/kusto.worker';
+import kustoWorkerUrl from 'url:@axiomhq/monaco-apl/release/esm/kusto.worker';
 import editorWorkerUrl from 'url:monaco-editor/esm/vs/editor/editor.worker';
 
 import './index.css';

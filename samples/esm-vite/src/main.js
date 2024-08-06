@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/edcore.main';
-import { getKustoWorker } from '@kusto/monaco-kusto';
+import { getKustoWorker } from '@axiomhq/monaco-apl';
 import './index.css';
 
 // Vite doesn't let us directly import files in dependencies as url's for some

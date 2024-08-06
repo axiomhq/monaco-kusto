@@ -66,7 +66,7 @@ async function main() {
         copyLanguageServerFiles('release/min'),
         copyLanguageServerFiles('release/dev'),
         compileESM(),
-        compileAMD(),
+        // compileAMD(),
         compileTypes(),
     ]);
 }

@@ -1,8 +1,8 @@
 {
-    "name": "monaco-kusto",
+    "name": "monaco-apl",
     "version": "0.0.0",
     "private": true,
-    "repository": "https://github.com/Azure/monaco-kusto.git",
+    "repository": "https://github.com/axiomhq/monaco-apl.git",
     "license": "MIT",
     "scripts": {
         "format": "prettier --write .",

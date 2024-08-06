@@ -15,38 +15,38 @@ declare namespace monaco.editor {
 
 // Export everything but the types
 declare namespace monaco.languages {
-    export const kusto: typeof import('@kusto/monaco-kusto');
+    export const kusto: typeof import('@axiomhq/monaco-apl');
 }
 
 // Types must be manually re-exported right now :(
 declare namespace monaco.languages.kusto {
-    export type LanguageSettings = import('@kusto/monaco-kusto').LanguageSettings;
-    export type SyntaxErrorAsMarkDownOptions = import('@kusto/monaco-kusto').SyntaxErrorAsMarkDownOptions;
-    export type QuickFixCodeActionOptions = import('@kusto/monaco-kusto').QuickFixCodeActionOptions;
-    export type FormatterOptions = import('@kusto/monaco-kusto').FormatterOptions;
-    export type FormatterPlacementStyle = import('@kusto/monaco-kusto').FormatterPlacementStyle;
-    export type LanguageServiceDefaults = import('@kusto/monaco-kusto').LanguageServiceDefaults;
-    export type KustoWorker = import('@kusto/monaco-kusto').KustoWorker;
-    export type WorkerAccessor = import('@kusto/monaco-kusto').WorkerAccessor;
-    export type Column = import('@kusto/monaco-kusto').Column;
-    export type Table = import('@kusto/monaco-kusto').Table;
-    export type ScalarParameter = import('@kusto/monaco-kusto').ScalarParameter;
-    export type TabularParameter = import('@kusto/monaco-kusto').TabularParameter;
-    export type InputParameter = import('@kusto/monaco-kusto').InputParameter;
-    export type Function = import('@kusto/monaco-kusto').Function;
-    export type Database = import('@kusto/monaco-kusto').Database;
-    export type EngineSchema = import('@kusto/monaco-kusto').EngineSchema;
-    export type ClusterMangerSchema = import('@kusto/monaco-kusto').ClusterMangerSchema;
-    export type DataManagementSchema = import('@kusto/monaco-kusto').DataManagementSchema;
-    export type Schema = import('@kusto/monaco-kusto').Schema;
-    export type VisualizationType = import('@kusto/monaco-kusto').VisualizationType;
-    export type Scale = import('@kusto/monaco-kusto').Scale;
-    export type LegendVisibility = import('@kusto/monaco-kusto').LegendVisibility;
-    export type YSplit = import('@kusto/monaco-kusto').YSplit;
-    export type Kind = import('@kusto/monaco-kusto').Kind;
-    export type RenderOptions = import('@kusto/monaco-kusto').RenderOptions;
-    export type RenderInfo = import('@kusto/monaco-kusto').RenderInfo;
-    export type DatabaseReference = import('@kusto/monaco-kusto').DatabaseReference;
-    export type ClusterReference = import('@kusto/monaco-kusto').ClusterReference;
-    export type OnDidProvideCompletionItems = import('@kusto/monaco-kusto').OnDidProvideCompletionItems;
+    export type LanguageSettings = import('@axiomhq/monaco-apl').LanguageSettings;
+    export type SyntaxErrorAsMarkDownOptions = import('@axiomhq/monaco-apl').SyntaxErrorAsMarkDownOptions;
+    export type QuickFixCodeActionOptions = import('@axiomhq/monaco-apl').QuickFixCodeActionOptions;
+    export type FormatterOptions = import('@axiomhq/monaco-apl').FormatterOptions;
+    export type FormatterPlacementStyle = import('@axiomhq/monaco-apl').FormatterPlacementStyle;
+    export type LanguageServiceDefaults = import('@axiomhq/monaco-apl').LanguageServiceDefaults;
+    export type KustoWorker = import('@axiomhq/monaco-apl').KustoWorker;
+    export type WorkerAccessor = import('@axiomhq/monaco-apl').WorkerAccessor;
+    export type Column = import('@axiomhq/monaco-apl').Column;
+    export type Table = import('@axiomhq/monaco-apl').Table;
+    export type ScalarParameter = import('@axiomhq/monaco-apl').ScalarParameter;
+    export type TabularParameter = import('@axiomhq/monaco-apl').TabularParameter;
+    export type InputParameter = import('@axiomhq/monaco-apl').InputParameter;
+    export type Function = import('@axiomhq/monaco-apl').Function;
+    export type Database = import('@axiomhq/monaco-apl').Database;
+    export type EngineSchema = import('@axiomhq/monaco-apl').EngineSchema;
+    export type ClusterMangerSchema = import('@axiomhq/monaco-apl').ClusterMangerSchema;
+    export type DataManagementSchema = import('@axiomhq/monaco-apl').DataManagementSchema;
+    export type Schema = import('@axiomhq/monaco-apl').Schema;
+    export type VisualizationType = import('@axiomhq/monaco-apl').VisualizationType;
+    export type Scale = import('@axiomhq/monaco-apl').Scale;
+    export type LegendVisibility = import('@axiomhq/monaco-apl').LegendVisibility;
+    export type YSplit = import('@axiomhq/monaco-apl').YSplit;
+    export type Kind = import('@axiomhq/monaco-apl').Kind;
+    export type RenderOptions = import('@axiomhq/monaco-apl').RenderOptions;
+    export type RenderInfo = import('@axiomhq/monaco-apl').RenderInfo;
+    export type DatabaseReference = import('@axiomhq/monaco-apl').DatabaseReference;
+    export type ClusterReference = import('@axiomhq/monaco-apl').ClusterReference;
+    export type OnDidProvideCompletionItems = import('@axiomhq/monaco-apl').OnDidProvideCompletionItems;
 }

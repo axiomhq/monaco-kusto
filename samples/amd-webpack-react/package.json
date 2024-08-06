@@ -1,5 +1,5 @@
 {
-    "name": "monaco-kusto--amd-webpack-react",
+    "name": "--amd-webpack-react",
     "version": "1.0.0",
     "private": true,
     "scripts": {
@@ -15,7 +15,7 @@
         "ci:typecheck": "tsc"
     },
     "dependencies": {
-        "@kusto/monaco-kusto": "workspace:*",
+        "@axiomhq/monaco-apl": "workspace:*",
         "monaco-editor": "^0.49.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

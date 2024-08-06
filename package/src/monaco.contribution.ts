@@ -152,7 +152,7 @@ function triggerSuggestDialogWhenCompletionItemSelected(editor: monaco.editor.IC
             // the next callback is called. This is why we're waiting here - to let all the callbacks run synchronously and be
             // the 'last' subscriber to run. Granted this is hacky, but until monaco provides a specific event for suggestions,
             // this is the best we have.
-            setTimeout(() => editor.trigger('monaco-kusto', 'editor.action.triggerSuggest', {}), 10);
+            setTimeout(() => editor.trigger('monaco-apl', 'editor.action.triggerSuggest', {}), 10);
         }
     });
 }

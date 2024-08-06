@@ -35,7 +35,7 @@ const config = {
                     },
                 },
                 {
-                    context: path.join(require.resolve('@kusto/monaco-kusto/package.json'), '../release/min'),
+                    context: path.join(require.resolve('@axiomhq/monaco-apl/package.json'), '../release/min'),
                     from: '**/*',
                     to: '../dist/vs/language/kusto/',
                 },

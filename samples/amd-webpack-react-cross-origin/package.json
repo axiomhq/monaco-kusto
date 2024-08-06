@@ -1,5 +1,5 @@
 {
-    "name": "monaco-kusto--amd-webpack-react-cross-origin",
+    "name": "--amd-webpack-react-cross-origin",
     "version": "1.0.0",
     "private": true,
     "scripts": {
@@ -14,7 +14,7 @@
         "playwright:webserver": "yarn server"
     },
     "dependencies": {
-        "@kusto/monaco-kusto": "workspace:*",
+        "@axiomhq/monaco-apl": "workspace:*",
         "express": "^4.18.2",
         "monaco-editor": "^0.49.0",
         "react": "^18.2.0",

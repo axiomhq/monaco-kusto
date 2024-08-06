@@ -1,20 +1,16 @@
 {
-    "name": "@kusto/monaco-kusto",
+    "name": "@axiomhq/monaco-apl",
     "version": "12.0.4",
-    "description": "CSL, KQL plugin for the Monaco Editor",
+    "description": "APL plugin for the Monaco Editor",
     "author": {
-        "name": "Microsoft"
+        "name": "axiomhq"
     },
     "license": "MIT",
-    "keywords": [
-        "Azure Data Explorer",
-        "ADE",
-        "kusto"
-    ],
-    "homepage": "https://github.com/Azure/monaco-kusto",
+    "keywords": [],
+    "homepage": "https://github.com/axiomhq/monaco-apl",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Azure/monaco-kusto"
+        "url": "https://github.com/axiomhq/monaco-apl"
     },
     "scripts": {
         "build": "ts-node ./scripts/build.ts",
