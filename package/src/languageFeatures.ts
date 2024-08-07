@@ -433,6 +433,12 @@ function toTextEdit(textEdit: ls.TextEdit): monaco.editor.ISingleEditOperation {
 
 const DEFAULT_DOCS_BASE_URL = 'https://learn.microsoft.com/azure/data-explorer/kusto/query';
 
+const DEMOTED_ITEMS = ['_sysTime'];
+
+function demoteItem(item: string) {
+    return `zzz${item}`;
+}
+
 export class CompletionAdapter implements monaco.languages.CompletionItemProvider {
     private readonly languageSettings: LanguageSettings;
     private completionCacheManager: CompletionCacheManager;
@@ -480,7 +486,7 @@ export class CompletionAdapter implements monaco.languages.CompletionItemProvide
                     let item: monaco.languages.CompletionItem = {
                         label: entry.label,
                         insertText: entry.insertText,
-                        sortText: entry.sortText,
+                        sortText: DEMOTED_ITEMS.includes(entry.label) ? demoteItem(entry.label) : entry.sortText,
                         filterText: createCompletionFilteredText(userInput, entry),
                         // TODO: Is this cast safe?
                         documentation: this.formatDocLink((entry.documentation as undefined | ls.MarkupContent)?.value),
