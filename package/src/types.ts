@@ -76,6 +76,9 @@ export interface KustoWorker {
      * Get visualization options in render command if present (null otherwise).
      */
     getRenderInfo(uri: string, cursorOffset: number): Promise<RenderInfo | null>;
+    getTimeFilterInfo(uri: string, cursorOffset: number): Promise<any>;
+    getTables(uri: string, cursorOffset: number): Promise<any>;
+    getResultTypes(uri: string, cursorOffset: number): Promise<any>;
     doDocumentFormat(uri: string): Promise<ls.TextEdit[]>;
     doRangeFormat(uri: string, range: ls.Range): Promise<ls.TextEdit[]>;
     doCurrentCommandFormat(uri: string, caretPosition: ls.Position): Promise<ls.TextEdit[]>;
